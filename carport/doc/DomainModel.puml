@@ -1,0 +1,131 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+Class Main
+Exception DatabaseException
+
+Package config {
+Object ThymeleafConfig
+}
+
+Package controller {
+Class CustomerController {
+
+}
+
+Class AdminController {
+
+}
+
+Class OrderController {
+
+}
+
+
+
+}
+
+Package persistence {
+
+Object ConnectionPool
+
+Class CustomerMapper {
+
+}
+
+Class AdminMapper {
+
+}
+
+Class OrderMapper {
+
+}
+
+Class MaterialMapper {
+
+}
+
+}
+
+Package entities {
+Class Customer {
+- String email
+- String firstname
+- String lastname
+- String address
+- String postalCode
++ getters()
++ setter()
+}
+
+Class Admin {
+- int id
+- String username
+- String password
++ getters()
++ setter()
+}
+
+Class Order {
+- int id
+- String email
+- String status
+- double widthMM
+- double heightMM
+- Timestamp createdAt
+- BigInteger
++ getters()
++ setter()
+}
+
+Class OrderWithShed {
+- int id
+- String email
+- String status
+- double widthMM
+- double heightMM
+- double shedWidthMM
+- double shedLengthMM
+- Timestamp createdAt
+- BigInteger
++ getters()
++ setter()
+}
+
+Class Material {
+- String category
+- String unit
+- String materialProduct
+- String materialProductDescription
+- double lengthMM
+- int quantity
+- int totalPrice
+- String description
++ getters()
++ setter()
+}
+
+Main <|-- CustomerController
+Main <|-- OrderController
+Main <|-- AdminController
+Main <|-- config
+
+CustomerController <|-- CustomerMapper
+OrderController <|-- OrderMapper
+OrderController <|-- MaterialMapper
+AdminController <|-- AdminMapper
+
+
+
+CustomerMapper *-- Customer
+AdminMapper *-- Admin
+OrderMapper *-- Order
+OrderMapper *-- OrderWithShed
+MaterialMapper *-- Material
+
+controller <|-- ConnectionPool
+persistence *-- DatabaseException
+
+}
+
+@enduml
