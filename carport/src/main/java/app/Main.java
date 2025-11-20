@@ -24,7 +24,7 @@ public class Main {
             config.fileRenderer(new JavalinThymeleaf(ThymeleafConfig.templateEngine()));
         }).start(7070);
 
-        app.get("/", ctx -> ctx.render("login.html"));
+        app.get("/", ctx -> ctx.render("homepage.html"));
 
         CustomerController.addRoutes(app);
         OrderController.addRoutes(app);
