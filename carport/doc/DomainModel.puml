@@ -73,7 +73,7 @@ Class Order {
 - double widthMM
 - double heightMM
 - Timestamp createdAt
-- BigInteger
+- BigDecimal totalPrice
 + getters()
 + setter()
 }
@@ -87,7 +87,7 @@ Class OrderWithShed {
 - double shedWidthMM
 - double shedLengthMM
 - Timestamp createdAt
-- BigInteger
+- BigDecimal totalPrice
 + getters()
 + setter()
 }
