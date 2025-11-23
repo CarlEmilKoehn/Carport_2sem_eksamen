@@ -5,18 +5,20 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Getter
 @Setter
 
 public class OrderWithShed extends Order{
-    public OrderWithShed(int id, String email, String status, int widthMM, int heightMM, Timestamp createdAt, BigDecimal totalPrice, int shedWidthMM, int shedLengthMM) {
-        super(id, email, status, widthMM, heightMM, createdAt, totalPrice);
-        this.shedWidthMM = shedWidthMM;
-        this.shedLengthMM = shedLengthMM;
-    }
 
+    private Shed shed;
     private int shedWidthMM;
     private int shedLengthMM;
 
+    public OrderWithShed(int id, String email, String status, RoofType roofType, int widthMM, int heightMM, Timestamp createdAt, List<Material> materials, BigDecimal totalPrice, Shed shed) {
+        super(id, email, status, roofType, widthMM, heightMM, createdAt, materials, totalPrice);
+
+        this.shed = shed;
+    }
 }
