@@ -33,16 +33,14 @@ public class OrderMapper {
                 int heightMM = rs.getInt("height_mm");
                 Timestamp createdAt = rs.getTimestamp("created_at");
                 BigDecimal totalPrice = rs.getBigDecimal("");
-
-                List<Material> materials = materialMapper(email);
-
+                List<Material> materials = getAllMaterialsFromOrder(id);
+                List<Comment> comments = getAllCommentsFromOrder(id);
                 Shed shed = new Shed(rs.getInt("shed_id"), rs.getInt("shed_width_MM"), rs.getInt("shed_length_MM"));
 
-
                 if (shed == null) {
-                    orders.add(new Order(id, email, status, roofType, widthMM, heightMM, createdAt, materials, totalPrice));
+                    orders.add(new Order(id, email, status, roofType, widthMM, heightMM, createdAt, materials, comments, totalPrice));
                 } else {
-                    orders.add(new OrderWithShed(id, email, status, roofType, widthMM, heightMM, createdAt, materials, totalPrice, shed));
+                    orders.add(new OrderWithShed(id, email, status, roofType, widthMM, heightMM, createdAt, materials, comments, totalPrice, shed));
                 }
             }
 

@@ -20,6 +20,7 @@ public class Order {
     private int heightMM;
     private Timestamp createdAt;
     private List<Material> materials;
+    private List<Comment> comments;
     private BigDecimal totalPrice;
 
 }
