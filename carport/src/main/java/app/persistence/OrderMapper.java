@@ -7,15 +7,22 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 public class OrderMapper {
 
-    public List<Order> getAllOrders() throws DatabaseException {
+    public static List<Order> getAllOrders() throws DatabaseException {
 
         List<Order> orders = new ArrayList<>();
 
-        String sql = "SELECT user_order_id, user_email, order_status, length_mm, width_mm, created_at " +
-                     "FROM public.\"user_order\" JOIN ";
+        String sql = "SELECT uo.user_order_id, uo.user_email, uo.order_status, uo.width_mm, uo.height_mm, uo.created_at, " +
+                     "rt.roof_type_id, rt.roof_type_name, rt.roof_type_deg, rt.roof_type_price, " +
+                     "s.shed_id, s.shed_width_mm, s.shed_length_mm, " +
+                     "uoc.user_order_change_id, uoc.admin_note, uoc.created_at AS change_created_at " +
+                     "FROM public.user_order uo " +
+                     "INNER JOIN roof_type rt ON uo.roof_type_id = rt.roof_type_id " +
+                     "INNER JOIN shed s ON uo.shed_id = s.shed_id " +
+                     "INNER JOIN user_order_change uoc ON uo.user_order_id = uoc.user_order_id; ";
 
         try(Connection connection = ConnectionPool.getInstance().getConnection()) {
 
@@ -33,8 +40,9 @@ public class OrderMapper {
                 int heightMM = rs.getInt("height_mm");
                 Timestamp createdAt = rs.getTimestamp("created_at");
                 BigDecimal totalPrice = rs.getBigDecimal("");
-                List<Material> materials = getAllMaterialsFromOrder(id);
-                List<Comment> comments = getAllCommentsFromOrder(id);
+                List<Material> materials = MaterialMapper.getAllMaterialsFromOrder(id);
+                List<Comment> comments = rs.Stream
+                        .toList();
                 Shed shed = new Shed(rs.getInt("shed_id"), rs.getInt("shed_width_MM"), rs.getInt("shed_length_MM"));
 
                 if (shed == null) {
@@ -51,7 +59,7 @@ public class OrderMapper {
         }
     }
 
-    public List<Order> getAllOrdersByEmail(String email) throws DatabaseException {
+    public static List<Order> getAllOrdersByEmail(String email) throws DatabaseException {
 
         List<Order> orders = new ArrayList<>();
 
@@ -74,5 +82,27 @@ public class OrderMapper {
         } catch (SQLException e) {
             throw new DatabaseException("Could not connect to DB: ", e.getMessage());
         }
+    }
+
+    public static List<Comment> getAllCommentsFromOrder(int orderID) throws DatabaseException {
+
+        String sql = "SELECT * ";
+
+        try(Connection connection = ConnectionPool.instance.getConnection()) {
+
+            PreparedStatement stmt = connection.prepareStatement(sql);
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+
+
+            }
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+        }
+
+        return null;
     }
 }
