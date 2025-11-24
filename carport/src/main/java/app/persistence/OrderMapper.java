@@ -10,7 +10,8 @@ import java.util.List;
 
 public class OrderMapper {
 
-    public static void setOrder(String email, String orderStatus, int widthMM, int heightMM, BigDecimal price, Timestamp createdAt, RoofType roofType, Shed shed) throws DatabaseException{
+    //TODO: Make createOrder save the materials as well.
+    public static void createOrder(String email, String orderStatus, int widthMM, int heightMM, BigDecimal price, Timestamp createdAt, RoofType roofType, Shed shed) throws DatabaseException{
 
         String sql = "INSERT INTO public.user_order (user_email, order_status, width_mm, height_mm, order_price, created_at, roof_type_id, shed_id) " +
                      "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -25,7 +26,12 @@ public class OrderMapper {
             stmt.setBigDecimal(5, price);
             stmt.setTimestamp(6, createdAt);
             stmt.setInt(7, roofType.getId());
-            stmt.setInt(8, shed.getId());
+
+            if (shed != null) {
+                stmt.setInt(8, shed.getId());
+            } else {
+                stmt.setString(8, null);
+            }
 
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -33,6 +39,42 @@ public class OrderMapper {
         }
     }
 
+    public static void changeOrderStatus(int orderId, String orderStatus) throws DatabaseException {
+
+        String sql = "UPDATE public.user_order SET order_status = ? WHERE user_order_id = ?";
+
+        try(Connection connection = ConnectionPool.getInstance().getConnection()) {
+            PreparedStatement stmt = connection.prepareStatement(sql);
+
+            stmt.setString(1, orderStatus);
+            stmt.setInt(2, orderId);
+
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+        }
+    }
+
+    public static void changeOrderPriceAndComment(int orderId, BigDecimal orderPrice, Comment comment) throws DatabaseException{
+
+        String sql;
+
+        if (comment != null) {
+            sql = "UPDATE public.user_order  SET order_price = ? WHERE user_order_id = ?";
+        } else {
+            sql = "UPDATE public.user_order SET order_price = ? WHERE user_order_id = ?";
+        }
+        try(Connection connection = ConnectionPool.getInstance().getConnection()) {
+            PreparedStatement stmt = connection.prepareStatement(sql);
+
+            stmt.setBigDecimal(1, orderPrice);
+            stmt.setInt(2, orderId);
+
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+        }
+    }
     public static List<Order> getAllOrders() throws DatabaseException {
 
         List<Order> orders = new ArrayList<>();
