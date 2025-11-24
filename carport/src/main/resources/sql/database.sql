@@ -84,10 +84,11 @@ CREATE TABLE IF NOT EXISTS public.user_order
     user_email character varying COLLATE pg_catalog."default" NOT NULL,
     order_status character varying COLLATE pg_catalog."default" NOT NULL,
     roof_type_id integer NOT NULL,
-    length_mm integer NOT NULL,
     width_mm integer NOT NULL,
+    height_mm integer NOT NULL,
     shed_id integer,
     created_at timestamp with time zone NOT NULL DEFAULT now(),
+    order_price numeric(10, 2) NOT NULL,
     CONSTRAINT user_order_pkey PRIMARY KEY (user_order_id)
     );
 
