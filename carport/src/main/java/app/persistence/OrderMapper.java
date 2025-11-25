@@ -10,21 +10,28 @@ import java.util.List;
 
 public class OrderMapper {
 
-    //TODO: Make createOrder save the materials as well.
-    public static void createOrder(String email, String orderStatus, int widthMM, int heightMM, BigDecimal price, RoofType roofType, Shed shed) throws DatabaseException{
+    //TODO: Make createOrder save the materials aswell
+    public static int createOrder(Order order) throws DatabaseException{
 
-        String sql = "INSERT INTO public.user_order (user_email, order_status, width_mm, height_mm, order_price, roof_type_id, shed_id) " +
-                     "VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO public.user_order " +
+                     "(user_email, order_status, width_mm, height_mm, order_price, roof_type_id, shed_id) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?) ";
 
         try(Connection connection = ConnectionPool.getInstance().getConnection()) {
             PreparedStatement stmt = connection.prepareStatement(sql);
 
-            stmt.setString(1, email);
-            stmt.setString(2, orderStatus);
-            stmt.setInt(3, widthMM);
-            stmt.setInt(4, heightMM);
-            stmt.setBigDecimal(5, price);
-            stmt.setInt(6, roofType.getId());
+            stmt.setString(1, order.getEmail());
+            stmt.setString(2, order.getStatus());
+            stmt.setInt(3, order.getWidthMM());
+            stmt.setInt(4, order.getHeightMM());
+            stmt.setBigDecimal(5, order.getTotalPrice());
+            stmt.setInt(6, order.getRoofType().getId());
+
+            Shed shed = null;
+
+            if (order instanceof OrderWithShed ows) {
+                shed = ows.getShed();
+            }
 
             if (shed != null) {
                 stmt.setInt(7, shed.getId());
@@ -32,7 +39,14 @@ public class OrderMapper {
                 stmt.setNull(7, Types.INTEGER);
             }
 
-            stmt.executeUpdate();
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("user_order_id");
+            } else {
+                throw new DatabaseException("Order was not confirmed", "No id returned");
+            }
+
         } catch (SQLException e) {
             throw new DatabaseException("Could not connect to DB: ", e.getMessage());
         }
@@ -83,7 +97,16 @@ public class OrderMapper {
                 insertStmt.executeUpdate();
 
                 connection.commit();
+
+
+            } catch (SQLException e) {
+                connection.rollback();
+                throw e;
+
+            } finally {
+                connection.setAutoCommit(true);
             }
+
         } catch (SQLException e) {
             throw new DatabaseException("Could not connect to DB: ", e.getMessage());
         }
@@ -93,12 +116,13 @@ public class OrderMapper {
 
         List<Order> orders = new ArrayList<>();
 
-        String sql = "SELECT user_order_id, user_email, order_status, width_mm, height_mm, order_price, created_at, " +
-                     "roof_type_id, roof_type_name, roof_type_deg, roof_type_price, " +
-                     "shed_id, shed_width_mm, shed_length_mm " +
-                     "FROM public.user_order " +
-                     "JOIN roof_type ON roof_type_id = roof_type_id " +
-                     "LEFT JOIN shed ON shed_id = shed_id; ";
+        String sql = "SELECT " +
+                "uo.user_order_id, uo.user_email, uo.order_status, uo.width_mm, uo.height_mm, uo.order_price, uo.created_at, " +
+                "rt.roof_type_id, rt.roof_type_name, rt.roof_type_deg, rt.roof_type_price, " +
+                "s.shed_id, s.shed_width_mm, s.shed_length_mm " +
+                "FROM public.user_order uo " +
+                "JOIN roof_type rt ON uo.roof_type_id = rt.roof_type_id " +
+                "LEFT JOIN shed s ON uo.shed_id = s.shed_id";
 
         try(Connection connection = ConnectionPool.getInstance().getConnection()) {
             PreparedStatement stmt = connection.prepareStatement(sql);
@@ -150,9 +174,10 @@ public class OrderMapper {
 
         List<Comment> comments = new ArrayList<>();
 
-        String sql = "SELECT user_order_id, admin_email, admin_note, created_at " +
+        String sql = "SELECT user_order_change_id, user_order_id, admin_email, admin_note, created_at " +
                      "FROM public.user_order_change " +
-                     "WHERE user_order_change_id = ?";
+                     "WHERE user_order_id = ? " +
+                     "ORDER BY created_at";
 
         try(Connection connection = ConnectionPool.getInstance().getConnection()) {
 
