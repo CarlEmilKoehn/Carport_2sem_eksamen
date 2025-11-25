@@ -13,6 +13,7 @@ public class Material {
     private int lengthMM;
     private String materialProductName;
     private String materialProductDescription;
+    private String materialCategoryName;
     private double materialPrice;
 
 
@@ -23,6 +24,7 @@ public class Material {
                 "Materiale Info:" +
                         "Materiale produkt id:" + materialProductId + "\n" +
                         "Materiale kategori id:" + materialCategoryId + "\n" +
+                        "Materiale kategori navn:" + materialCategoryName + "\n" +
                         "Enheds id:" + unitId + "\n" +
                         "Materiale længde i mm:" + lengthMM + "\n" +
                         "Produkt navn:" + materialProductName + "\n" +
