@@ -55,17 +55,17 @@ public class OrderMapper {
         }
     }
 
-    public static void changeOrderPriceAndComment(int orderId, BigDecimal orderPrice, Comment comment) throws DatabaseException{
+    public static void changeOrderPrice(int orderId, BigDecimal orderPrice, Admin admin, String comment) throws DatabaseException{
 
-        String sql;
+        String updateSql = "UPDATE public.user_order  " +
+                           "SET order_price = ? " +
+                           "WHERE user_order_id = ?";
 
-        if (comment != null) {
-            sql = "UPDATE public.user_order  SET order_price = ? WHERE user_order_id = ?";
-        } else {
-            sql = "UPDATE public.user_order SET order_price = ? WHERE user_order_id = ?";
-        }
+        String insertSql = "INSERT INTO public.user_order_change (user_order_id, admin_email, admin_note) " +
+                           "VALUES (?, ?, ?)";
+
         try(Connection connection = ConnectionPool.getInstance().getConnection()) {
-            PreparedStatement stmt = connection.prepareStatement(sql);
+            PreparedStatement stmt = connection.prepareStatement(updateSql);
 
             stmt.setBigDecimal(1, orderPrice);
             stmt.setInt(2, orderId);
@@ -74,7 +74,27 @@ public class OrderMapper {
         } catch (SQLException e) {
             throw new DatabaseException("Could not connect to DB: ", e.getMessage());
         }
+
+        try(Connection connection = ConnectionPool.getInstance().getConnection()) {
+            PreparedStatement stmt = connection.prepareStatement(insertSql);
+
+            stmt.setInt(1, orderId);
+            stmt.setString(2, admin.getEmail());
+
+            if (comment == null || comment.isBlank()) {
+                stmt.setString(3, null);
+            } else {
+                stmt.setString(3, comment);
+            }
+
+            stmt.executeQuery();
+        } catch (SQLException e) {
+            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+        }
+
+
     }
+
     public static List<Order> getAllOrders() throws DatabaseException {
 
         List<Order> orders = new ArrayList<>();
@@ -87,7 +107,6 @@ public class OrderMapper {
                      "LEFT JOIN shed ON shed_id = shed_id; ";
 
         try(Connection connection = ConnectionPool.getInstance().getConnection()) {
-
             PreparedStatement stmt = connection.prepareStatement(sql);
 
             ResultSet rs = stmt.executeQuery();
