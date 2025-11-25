@@ -14,12 +14,9 @@ import java.util.List;
 
 class OrderMapperTest {
 
-    private OrderMapper orderMapper;
-
     @BeforeEach
     void setUp() {
 
-        orderMapper = new OrderMapper();
     }
 
     @AfterEach
@@ -38,7 +35,7 @@ class OrderMapperTest {
         );
 
         //--- when ---
-        List<Order> actual = orderMapper.getAllOrders();
+        List<Order> actual = OrderMapper.getAllOrders();
 
         //--- then ---
         assertEquals(expected, actual);
@@ -57,7 +54,7 @@ class OrderMapperTest {
         );
 
         //--- when ---
-        List<Order> actual = orderMapper.getAllOrdersByEmail("d@d");
+        List<Order> actual = OrderMapper.getAllOrdersByEmail("d@d");
 
         //--- then ---
         assertEquals(expected, actual);

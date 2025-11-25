@@ -11,10 +11,10 @@ import java.util.List;
 public class OrderMapper {
 
     //TODO: Make createOrder save the materials as well.
-    public static void createOrder(String email, String orderStatus, int widthMM, int heightMM, BigDecimal price, Timestamp createdAt, RoofType roofType, Shed shed) throws DatabaseException{
+    public static void createOrder(String email, String orderStatus, int widthMM, int heightMM, BigDecimal price, RoofType roofType, Shed shed) throws DatabaseException{
 
-        String sql = "INSERT INTO public.user_order (user_email, order_status, width_mm, height_mm, order_price, created_at, roof_type_id, shed_id) " +
-                     "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO public.user_order (user_email, order_status, width_mm, height_mm, order_price, roof_type_id, shed_id) " +
+                     "VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
 
         try(Connection connection = ConnectionPool.getInstance().getConnection()) {
             PreparedStatement stmt = connection.prepareStatement(sql);
@@ -24,13 +24,12 @@ public class OrderMapper {
             stmt.setInt(3, widthMM);
             stmt.setInt(4, heightMM);
             stmt.setBigDecimal(5, price);
-            stmt.setTimestamp(6, createdAt);
-            stmt.setInt(7, roofType.getId());
+            stmt.setInt(6, roofType.getId());
 
             if (shed != null) {
-                stmt.setInt(8, shed.getId());
+                stmt.setInt(7, shed.getId());
             } else {
-                stmt.setString(8, null);
+                stmt.setNull(7, Types.INTEGER);
             }
 
             stmt.executeUpdate();
@@ -65,34 +64,29 @@ public class OrderMapper {
                            "VALUES (?, ?, ?)";
 
         try(Connection connection = ConnectionPool.getInstance().getConnection()) {
-            PreparedStatement stmt = connection.prepareStatement(updateSql);
+            connection.setAutoCommit(false);
 
-            stmt.setBigDecimal(1, orderPrice);
-            stmt.setInt(2, orderId);
+            try(PreparedStatement updateStmt = connection.prepareStatement(updateSql);
+                PreparedStatement insertStmt = connection.prepareStatement(insertSql)) {
 
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
-        }
+                updateStmt.setBigDecimal(1, orderPrice);
+                updateStmt.setInt(2, orderId);
+                updateStmt.executeUpdate();
 
-        try(Connection connection = ConnectionPool.getInstance().getConnection()) {
-            PreparedStatement stmt = connection.prepareStatement(insertSql);
+                insertStmt.setInt(1, orderId);
+                insertStmt.setString(2, admin.getEmail());
+                if (comment == null || comment.isBlank()) {
+                    insertStmt.setNull(3, Types.VARCHAR);
+                } else {
+                    insertStmt.setString(3, comment);
+                }
+                insertStmt.executeUpdate();
 
-            stmt.setInt(1, orderId);
-            stmt.setString(2, admin.getEmail());
-
-            if (comment == null || comment.isBlank()) {
-                stmt.setString(3, null);
-            } else {
-                stmt.setString(3, comment);
+                connection.commit();
             }
-
-            stmt.executeQuery();
         } catch (SQLException e) {
             throw new DatabaseException("Could not connect to DB: ", e.getMessage());
         }
-
-
     }
 
     public static List<Order> getAllOrders() throws DatabaseException {
@@ -138,7 +132,7 @@ public class OrderMapper {
                         rs.getInt("shed_length_mm")
                 );
 
-                if (shed == null) {
+                if (shed.getId() == 0 || shed.getWidthMM() == 0 || shed.getLengthMM() == 0) {
                     orders.add(new Order(orderID, email, status, roofType, widthMM, heightMM, createdAt, materials, comments, totalPrice));
                 } else {
                     orders.add(new OrderWithShed(orderID, email, status, roofType, widthMM, heightMM, createdAt, materials, comments, totalPrice, shed));
@@ -157,7 +151,7 @@ public class OrderMapper {
         List<Comment> comments = new ArrayList<>();
 
         String sql = "SELECT user_order_id, admin_email, admin_note, created_at " +
-                     "FROM public.user_order_change" +
+                     "FROM public.user_order_change " +
                      "WHERE user_order_change_id = ?";
 
         try(Connection connection = ConnectionPool.getInstance().getConnection()) {
