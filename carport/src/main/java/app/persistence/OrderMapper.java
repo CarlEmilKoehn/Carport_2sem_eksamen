@@ -10,41 +10,86 @@ import java.util.List;
 
 public class OrderMapper {
 
-    //TODO: Make createOrder save the materials aswell
     public static int createOrder(Order order) throws DatabaseException{
 
-        String sql = "INSERT INTO public.user_order " +
-                     "(user_email, order_status, width_mm, height_mm, order_price, roof_type_id, shed_id) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?) ";
+        String orderSql = "INSERT INTO public.user_order " +
+                "(user_email, order_status, width_mm, height_mm, order_price, roof_type_id, shed_id) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?) " +
+                "RETURNING user_order_id";
+
+        String materialSql = "INSERT INTO public.order_material " +
+                "(user_order_id, material_product_id, quantity, note, total_price) " +
+                "VALUES (?, ?, ?, ?, ?)";
 
         try(Connection connection = ConnectionPool.getInstance().getConnection()) {
-            PreparedStatement stmt = connection.prepareStatement(sql);
 
-            stmt.setString(1, order.getEmail());
-            stmt.setString(2, order.getStatus());
-            stmt.setInt(3, order.getWidthMM());
-            stmt.setInt(4, order.getHeightMM());
-            stmt.setBigDecimal(5, order.getTotalPrice());
-            stmt.setInt(6, order.getRoofType().getId());
+            connection.setAutoCommit(false);
 
-            Shed shed = null;
+            try(PreparedStatement orderStmt = connection.prepareStatement(orderSql);
+                PreparedStatement materialStmt = connection.prepareStatement(materialSql)) {
 
-            if (order instanceof OrderWithShed ows) {
-                shed = ows.getShed();
-            }
+                orderStmt.setString(1, order.getEmail());
+                orderStmt.setString(2, order.getStatus());
+                orderStmt.setInt(3, order.getWidthMM());
+                orderStmt.setInt(4, order.getHeightMM());
+                orderStmt.setBigDecimal(5, order.getTotalPrice());
+                orderStmt.setInt(6, order.getRoofType().getId());
 
-            if (shed != null) {
-                stmt.setInt(7, shed.getId());
-            } else {
-                stmt.setNull(7, Types.INTEGER);
-            }
+                Shed shed = null;
+                if (order instanceof OrderWithShed ows) {
+                    shed = ows.getShed();
+                }
 
-            ResultSet rs = stmt.executeQuery();
+                if (shed != null) {
+                    orderStmt.setInt(7, shed.getId());
+                } else {
+                    orderStmt.setNull(7, Types.INTEGER);
+                }
 
-            if (rs.next()) {
-                return rs.getInt("user_order_id");
-            } else {
-                throw new DatabaseException("Order was not confirmed", "No id returned");
+                ResultSet rs = orderStmt.executeQuery();
+
+                int orderId;
+
+                if (rs.next()) {
+                    orderId = rs.getInt("user_order_id");
+                } else {
+                    throw new DatabaseException("Order was not confirmed", "No id returned");
+                }
+
+                if (order.getMaterials() != null) {
+                    for (Material m : order.getMaterials()) {
+
+                        int materialProductId = m.getMaterialProductId();
+                        int quantity = m.getQuantity();
+                        String materialNote = m.getNote();
+                        BigDecimal materialPrice = m.getTotalPrice();
+
+                        materialStmt.setInt(1, orderId);
+                        materialStmt.setInt(2, materialProductId);
+                        materialStmt.setInt(3, quantity);
+
+                        if (materialNote == null || materialNote.isBlank()) {
+                            materialStmt.setNull(4, Types.VARCHAR);
+                        } else {
+                            materialStmt.setString(4, materialNote);
+                        }
+
+                        materialStmt.setBigDecimal(5, materialPrice);
+
+                        materialStmt.addBatch();
+                    }
+                    materialStmt.executeBatch();
+                }
+
+                connection.commit();
+
+                return orderId;
+
+            } catch (SQLException e) {
+                connection.rollback();
+                throw e;
+            } finally {
+                connection.setAutoCommit(true);
             }
 
         } catch (SQLException e) {
@@ -98,11 +143,9 @@ public class OrderMapper {
 
                 connection.commit();
 
-
             } catch (SQLException e) {
                 connection.rollback();
                 throw e;
-
             } finally {
                 connection.setAutoCommit(true);
             }
