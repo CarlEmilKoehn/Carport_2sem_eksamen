@@ -13,13 +13,13 @@ public class OrderMapper {
     public static int createOrder(Order order) throws DatabaseException{
 
         String orderSql = "INSERT INTO public.user_order " +
-                "(user_email, order_status, width_mm, height_mm, order_price, roof_type_id, shed_id) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?) " +
-                "RETURNING user_order_id";
+                          "(user_email, order_status, width_mm, height_mm, order_price, roof_type_id, shed_id) " +
+                          "VALUES (?, ?, ?, ?, ?, ?, ?) " +
+                          "RETURNING user_order_id";
 
         String materialSql = "INSERT INTO public.order_material " +
-                "(user_order_id, material_product_id, quantity, note, total_price) " +
-                "VALUES (?, ?, ?, ?, ?)";
+                             "(user_order_id, material_product_id, quantity, note, total_price) " +
+                             "VALUES (?, ?, ?, ?, ?)";
 
         try(Connection connection = ConnectionPool.getInstance().getConnection()) {
 
@@ -160,12 +160,12 @@ public class OrderMapper {
         List<Order> orders = new ArrayList<>();
 
         String sql = "SELECT " +
-                "uo.user_order_id, uo.user_email, uo.order_status, uo.width_mm, uo.height_mm, uo.order_price, uo.created_at, " +
-                "rt.roof_type_id, rt.roof_type_name, rt.roof_type_deg, rt.roof_type_price, " +
-                "s.shed_id, s.shed_width_mm, s.shed_length_mm " +
-                "FROM public.user_order uo " +
-                "JOIN roof_type rt ON uo.roof_type_id = rt.roof_type_id " +
-                "LEFT JOIN shed s ON uo.shed_id = s.shed_id";
+                     "uo.user_order_id, uo.user_email, uo.order_status, uo.width_mm, uo.height_mm, uo.order_price, uo.created_at, " +
+                     "rt.roof_type_id, rt.roof_type_name, rt.roof_type_deg, rt.roof_type_price, " +
+                     "s.shed_id, s.shed_width_mm, s.shed_length_mm " +
+                     "FROM public.user_order uo " +
+                     "JOIN roof_type rt ON uo.roof_type_id = rt.roof_type_id " +
+                     "LEFT JOIN shed s ON uo.shed_id = s.shed_id";
 
         try(Connection connection = ConnectionPool.getInstance().getConnection()) {
             PreparedStatement stmt = connection.prepareStatement(sql);

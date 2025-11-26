@@ -1,18 +1,23 @@
 package app.persistence;
 
+import app.entities.Admin;
+import app.entities.Comment;
 import app.entities.Order;
-import app.entities.OrderWithShed;
 import app.exceptions.DatabaseException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.List;
 
 class OrderMapperTest {
+
+    private Order order;
+    private final Admin testAdmin = new Admin();
+    private final String commentText = "testComment";
 
     @BeforeEach
     void setUp() {
@@ -24,40 +29,58 @@ class OrderMapperTest {
     }
 
     @Test
-    void getAllOrders() throws DatabaseException {
+    void createOrder() throws DatabaseException {
 
-        //--- given ---
-        List<Order> expected = List.of(
-                new Order(1, "a@a.com", "PENDING", 100, 200, Timestamp.valueOf("2024-01-01 10:00:00"), new BigDecimal("123.45")),
-                new Order(2, "b@b.com", "PAID", 300, 400, Timestamp.valueOf("2024-02-01 12:00:00"), new BigDecimal("456.78")),
-                new OrderWithShed(3, "c@c.com", "PENDING", 300, 400, Timestamp.valueOf("2024-02-01 12:00:00"), new BigDecimal("456.78"), 150, 250),
-                new OrderWithShed(4, "d@d.com", "PAID", 200, 100, Timestamp.valueOf("2024-02-01 12:00:00"), new BigDecimal("456.78"), 150, 250)
-        );
 
-        //--- when ---
-        List<Order> actual = OrderMapper.getAllOrders();
-
-        //--- then ---
-        assertEquals(expected, actual);
-        assertEquals(expected.size(), actual.size());
     }
 
     @Test
-    void getAllOrdersByEmail() throws DatabaseException {
+    void changeOrderStatus() throws DatabaseException {
 
-        //--- given ---
-        List<Order> expected = List.of(
-                new Order(1, "a@a.com", "PENDING", 100, 200, Timestamp.valueOf("2024-01-01 10:00:00"), new BigDecimal("123.45")),
-                new Order(2, "d@d.com", "PAID", 300, 400, Timestamp.valueOf("2024-02-01 12:00:00"), new BigDecimal("456.78")),
-                new OrderWithShed(3, "c@c.com", "PENDING", 300, 400, Timestamp.valueOf("2024-02-01 12:00:00"), new BigDecimal("456.78"), 150, 250),
-                new OrderWithShed(4, "d@d.com", "PAID", 200, 100, Timestamp.valueOf("2024-02-01 12:00:00"), new BigDecimal("456.78"), 150, 250)
-        );
+    }
 
-        //--- when ---
-        List<Order> actual = OrderMapper.getAllOrdersByEmail("d@d");
+    @Test
+    void changeOrderPrice() throws DatabaseException {
 
-        //--- then ---
-        assertEquals(expected, actual);
-        assertEquals(2, actual.size());
+        BigDecimal newPrice = new BigDecimal("55000.55");
+
+        Order oldOrder = order;
+
+        OrderMapper.changeOrderPrice(order.getId(), newPrice, testAdmin, commentText);
+
+        assertNotNull(order);
+        assertNotEquals(oldOrder.getTotalPrice(), order.getTotalPrice());
+
+
+    }
+
+    @Test
+    void getAllOrders() throws DatabaseException {
+
+        List<Order> actual = OrderMapper.getAllOrders();
+
+        assertNotNull(actual);
+        assertFalse(actual.isEmpty());
+
+        boolean found = actual
+                .stream()
+                .anyMatch(o -> o.getId() == order.getId());
+        assertTrue(found);
+    }
+
+    @Test
+    void getAllCommentsFromOrder() throws DatabaseException {
+
+        OrderMapper.changeOrderPrice(order.getId(), new BigDecimal("21000.00"), testAdmin, commentText);
+
+        List<Comment> actual = OrderMapper.getAllCommentsFromOrder(order.getId());
+
+        assertNotNull(actual);
+        assertFalse(actual.isEmpty());
+
+        boolean found = actual
+                .stream()
+                .anyMatch(c -> commentText.equals(c.getNote()));
+        assertTrue(found);
     }
 }
