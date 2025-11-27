@@ -1,8 +1,6 @@
 package app.persistence;
 
-import app.entities.Admin;
-import app.entities.Comment;
-import app.entities.Order;
+import app.entities.*;
 import app.exceptions.DatabaseException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +9,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 class OrderMapperTest {
@@ -31,12 +32,30 @@ class OrderMapperTest {
     @Test
     void createOrder() throws DatabaseException {
 
+        RoofType roofType = new RoofType(1, "FLAT", 90, new BigDecimal("500.00"));
+        List<Material> materials = new ArrayList<>();
+        materials.add(new Material());
+        List<Comment> comments = new ArrayList<>();
+        comments.add(new Comment(5, 2, "test", Timestamp.from(Instant.now()), "admin@outlook.dk"));
+
+        Order newOrder = new Order(2, "a@a", "PENDING", roofType, 50, 50, Timestamp.from(Instant.now()), materials, comments, new BigDecimal("5000.00"));
+
+        OrderMapper.createOrder(newOrder);
 
     }
 
     @Test
     void changeOrderStatus() throws DatabaseException {
 
+        String newStatus = "PAID";
+
+        Order olderOrder = order;
+
+        OrderMapper.changeOrderStatus(order.getId(), newStatus);
+
+        assertNotNull(order);
+        assertNotEquals(olderOrder.getStatus(), order.getStatus());
+        assertEquals(newStatus, order.getStatus());
     }
 
     @Test
@@ -50,8 +69,6 @@ class OrderMapperTest {
 
         assertNotNull(order);
         assertNotEquals(oldOrder.getTotalPrice(), order.getTotalPrice());
-
-
     }
 
     @Test
