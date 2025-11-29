@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <title>FOG</title>
+    <link rel="stylesheet" href="/css/admin_login.css">
+</head>
+<body>
+    <div class="login-container">
+        <h1>Admin Log Ind</h1>
+        <form action="/admin/login" method="post">
+            <input type="text" name="admin_email" placeholder="Email" required>
+            <input type="password" name="admin_password" placeholder="Adgangskode" required>
+            <button type="submit">Log ind</button>
+            <p class="message" th:if="${fejl}" th:text="${fejl}"></p>
+
+        </form>
+    </div>
+</body>
+</html>
