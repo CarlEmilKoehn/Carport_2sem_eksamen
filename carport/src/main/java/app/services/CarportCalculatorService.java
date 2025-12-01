@@ -115,7 +115,7 @@ public class CarportCalculatorService {
     }
 
     private int calculateRaftersForLength(int lengthMM) {
-        return (int) Math.ceil(lengthMM / 555.00);
+        return (int) Math.ceil(lengthMM / 555.0);
     }
 
 }
