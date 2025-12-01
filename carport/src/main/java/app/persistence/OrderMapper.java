@@ -13,8 +13,8 @@ public class OrderMapper {
     public static int createOrder(Order order) throws DatabaseException{
 
         String orderSql = "INSERT INTO public.user_order " +
-                          "(user_email, order_status, width_mm, height_mm, order_price, roof_type_id, shed_id) " +
-                          "VALUES (?, ?, ?, ?, ?, ?, ?) " +
+                          "(user_email, order_status, width_mm, height_mm, length_mm, order_price, roof_type_id, shed_id) " +
+                          "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
                           "RETURNING user_order_id";
 
         String materialSql = "INSERT INTO public.order_material " +
@@ -32,6 +32,7 @@ public class OrderMapper {
                 orderStmt.setString(2, order.getStatus());
                 orderStmt.setInt(3, order.getWidthMM());
                 orderStmt.setInt(4, order.getHeightMM());
+                orderStmt.setInt(5, order.getLengthMM());
                 orderStmt.setBigDecimal(5, order.getTotalPrice());
                 orderStmt.setInt(6, order.getRoofType().getId());
 
@@ -59,7 +60,7 @@ public class OrderMapper {
                 if (order.getMaterials() != null) {
                     for (Material m : order.getMaterials()) {
 
-                        int materialProductId = m.getMaterialProductId();
+                        int materialProductId = m.getProductId();
                         int quantity = m.getQuantity();
                         String materialNote = m.getNote();
                         BigDecimal materialPrice = m.getTotalPrice();
@@ -133,7 +134,7 @@ public class OrderMapper {
                 updateStmt.executeUpdate();
 
                 insertStmt.setInt(1, orderId);
-                insertStmt.setString(2, admin.getEmail());
+                insertStmt.setString(2, admin.getAdminEmail());
                 if (comment == null || comment.isBlank()) {
                     insertStmt.setNull(3, Types.VARCHAR);
                 } else {
@@ -160,7 +161,7 @@ public class OrderMapper {
         List<Order> orders = new ArrayList<>();
 
         String sql = "SELECT " +
-                     "uo.user_order_id, uo.user_email, uo.order_status, uo.width_mm, uo.height_mm, uo.order_price, uo.created_at, " +
+                     "uo.user_order_id, uo.user_email, uo.order_status, uo.width_mm, uo.height_mm, uo.length_mm, uo.order_price, uo.created_at, " +
                      "rt.roof_type_id, rt.roof_type_name, rt.roof_type_deg, rt.roof_type_price, " +
                      "s.shed_id, s.shed_width_mm, s.shed_length_mm " +
                      "FROM public.user_order uo " +
@@ -187,6 +188,7 @@ public class OrderMapper {
 
                 int widthMM = rs.getInt("width_mm");
                 int heightMM = rs.getInt("height_mm");
+                int lengthMM = rs.getInt("length_mm");
                 Timestamp createdAt = rs.getTimestamp("created_at");
                 BigDecimal totalPrice = rs.getBigDecimal("order_price");
 
@@ -200,9 +202,9 @@ public class OrderMapper {
                 );
 
                 if (shed.getId() == 0 || shed.getWidthMM() == 0 || shed.getLengthMM() == 0) {
-                    orders.add(new Order(orderID, email, status, roofType, widthMM, heightMM, createdAt, materials, comments, totalPrice));
+                    orders.add(new Order(orderID, email, status, roofType, widthMM, heightMM, lengthMM, createdAt, materials, comments, totalPrice));
                 } else {
-                    orders.add(new OrderWithShed(orderID, email, status, roofType, widthMM, heightMM, createdAt, materials, comments, totalPrice, shed));
+                    orders.add(new OrderWithShed(orderID, email, status, roofType, widthMM, heightMM, lengthMM, createdAt, materials, comments, totalPrice, shed));
                 }
             }
 
