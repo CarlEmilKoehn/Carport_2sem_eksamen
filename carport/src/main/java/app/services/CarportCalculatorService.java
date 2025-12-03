@@ -18,10 +18,14 @@ public class CarportCalculatorService {
         addPosts(order, materials);
         addRems(order, materials);
         addRafters(order, materials);
+        addSterns(order, materials);
+        addRoofSheets(order, materials);
 
         BigDecimal total = materials.stream()
                 .map(Material::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal slopePrice = calculateSlopePrice(order);
 
         order.setMaterials(materials);
         order.setTotalPrice(total);
@@ -40,8 +44,7 @@ public class CarportCalculatorService {
 
         BigDecimal linePrice = basePost.getUnitPrice().multiply(BigDecimal.valueOf(totalPosts));
 
-
-        Material line = new Material(
+        materials.add(new Material(
                 0,
                 order.getId(),
                 basePost.getProductId(),
@@ -54,9 +57,7 @@ public class CarportCalculatorService {
                 basePost.getUnitName(),
                 basePost.getUnitShortName(),
                 basePost.getUnitPrice()
-        );
-
-       materials.add(line);
+        ));
     }
 
     private void addRems(Order order, List<Material> materials) throws DatabaseException {
@@ -70,7 +71,8 @@ public class CarportCalculatorService {
         BigDecimal remPrice = baseRem.getUnitPrice()
                 .multiply(BigDecimal.valueOf(totalRems));
 
-        Material line = new Material(
+
+        materials.add(new Material(
                 0,
                 order.getId(),
                 baseRem.getProductId(),
@@ -83,9 +85,7 @@ public class CarportCalculatorService {
                 baseRem.getUnitName(),
                 baseRem.getUnitShortName(),
                 baseRem.getUnitPrice()
-        );
-
-        materials.add(line);
+        ));
     }
 
     private void addRafters(Order order, List<Material> materials) throws DatabaseException {
@@ -98,7 +98,7 @@ public class CarportCalculatorService {
 
         BigDecimal raftersPrice = baseRafter.getUnitPrice().multiply(BigDecimal.valueOf(totalRafters));
 
-        Material rafter = new Material(
+        materials.add(new Material(
                 0,
                 order.getId(),
                 baseRafter.getProductId(),
@@ -111,11 +111,52 @@ public class CarportCalculatorService {
                 baseRafter.getUnitName(),
                 baseRafter.getUnitShortName(),
                 baseRafter.getUnitPrice()
-        );
+        ));
     }
 
     private int calculateRaftersForLength(int lengthMM) {
         return (int) Math.ceil(lengthMM / 555.0);
     }
 
+    private void addSterns(Order order, List<Material> materials) throws DatabaseException {
+
+
+    }
+
+
+    private void addRoofSheets(Order order, List<Material> materials) throws DatabaseException {
+
+        int widthMM = order.getWidthMM();
+        int lengthMM = order.getLengthMM();
+
+        int sheetsAcross = (int) Math.ceil(widthMM / 1000.0);
+
+        Material baseSheet = MaterialMapper.findRoofSheetForLength(lengthMM);
+
+        BigDecimal roofSheetPrice = baseSheet.getUnitPrice().multiply(BigDecimal.valueOf(sheetsAcross));
+
+        materials.add(new Material(
+                order.getId(),
+                baseSheet.getProductId(),
+                sheetsAcross,
+                roofSheetPrice,
+                "Tagplader",
+                baseSheet.getProductName(),
+                baseSheet.getProductDescription(),
+                baseSheet.getLengthMM(),
+                baseSheet.getUnitName(),
+                baseSheet.getUnitShortName(),
+                baseSheet.getUnitPrice()
+        ));
+    }
+
+    private BigDecimal calculateSlopePrice(Order order) {
+
+        if (order.getRoofType() == null) {
+            return BigDecimal.ZERO;
+        }
+
+        return BigDecimal.valueOf(order.getRoofType().getDegrees())
+                .multiply(BigDecimal.valueOf(240.0));
+    }
 }
