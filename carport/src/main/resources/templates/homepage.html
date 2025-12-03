@@ -1,10 +1,100 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Fog - Holder i længden</title>
+
+    <link rel="icon" type="image/x-icon" th:href="@{/images/favicon.ico}">
+    <link rel="stylesheet" th:href="@{/css/homepage.css}">
 </head>
+
 <body>
+
+<header class="topbar">
+    <div class="topbar-inner">
+        <img th:src="@{/images/foglogo.png}"
+             src="/images/foglogo.png"
+             alt="logo"
+             class="headerLogo"
+             height="100"
+             width="100">
+
+        <nav class="mainNav">
+            <a href="https://www.johannesfog.dk/have-fritid/carporte/enkelt-carporte"
+               class="headerButton"
+               target="_blank"
+               rel="noopener">
+                Standard Carport
+            </a>
+            <a href="customMadeCarport.html"
+               class="headerButton"
+               target="_self">
+                Skræddersyet Carport
+            </a>
+        </nav>
+    </div>
+</header>
+
+<main class="cards">
+    <article class="card">
+        <img th:src="@{/images/StCarLogo.png}"
+             src="/images/StCarLogo.png"
+             alt="Standard Carport">
+        <a href="https://www.johannesfog.dk/have-fritid/carporte/enkelt-carporte"
+           class="cardButton"
+           target="_blank"
+           rel="noopener">
+            Se udvalget
+        </a>
+    </article>
+
+    <article class="card">
+        <img th:src="@{/images/SkCarLogo.png}"
+             src="/images/SkCarLogo.png"
+             alt="Skræddersyet Carport">
+        <a th:href="@{/customMadeCarport}"
+           class="cardButton"
+           target="_self">
+            Se udvalget
+        </a>
+    </article>
+</main>
+
+<footer>
+    <nav>
+        <div>
+            <a href="https://www.johannesfog.dk/om-fog/kundeservice"
+               class="footerButton"
+               target="_blank"
+               rel="noopener">
+                Kundeservice
+            </a>
+            <a href="https://www.johannesfog.dk/om-fog/kontakt"
+               class="footerButton"
+               target="_blank"
+               rel="noopener">
+                Kontakt
+            </a>
+        </div>
+
+        <div>
+            <img th:src="@{/images/foglogo.png}"
+                 src="/images/foglogo.png"
+                 alt="logo"
+                 class="footerLogo"
+                 height="100"
+                 width="100">
+            <p>
+                <b>Johannes Fog A/S</b><br>
+                Firskovvej 20<br>
+                2800 Lyngby
+            </p>
+        </div>
+    </nav>
+</footer>
 
 </body>
 </html>
