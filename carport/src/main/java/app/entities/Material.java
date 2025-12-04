@@ -37,6 +37,13 @@ public class Material {
         this.unitPrice = unitPrice;
     }
 
-    public Material(int materialProductId, String materialProductName, String materialProductDescription, int lengthMm, BigDecimal materialPrice, String unitName, String unitShortName) {
+    public Material(int materialProductId, String materialProductName, String materialProductDescription, int lengthMM, BigDecimal materialPrice, String unitName, String unitShortName) {
+        this.productId = materialProductId;
+        this.productName = materialProductName;
+        this.productDescription = materialProductDescription;
+        this.lengthMM = lengthMM;
+        this.unitPrice = materialPrice;
+        this.unitName = unitName;
+        this.unitShortName = unitShortName;
     }
 }

@@ -120,7 +120,6 @@ public class MaterialMapper {
                      "u.unit_name, u.unit_short_name " +
                      "FROM material_product mp " +
                      "JOIN unit u ON mp.unit_id = u.unit_id " +
-                     "JOIN material_category mc ON mp.material_category_id = mc.material_category_id " +
                      "WHERE mp.length_mm >= ? " +
                      "AND mc.material_category_name = 'Rem' " +
                      "ORDER BY mp.length_mm ASC " +

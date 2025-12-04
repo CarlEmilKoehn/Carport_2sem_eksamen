@@ -3,7 +3,7 @@ package app.services;
 import app.entities.Material;
 import app.entities.Order;
 import app.exceptions.DatabaseException;
-import app.persistence.MaterialMapper;   // husk denne import
+import app.persistence.MaterialMapper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
