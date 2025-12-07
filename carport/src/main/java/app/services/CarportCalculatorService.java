@@ -2,6 +2,8 @@ package app.services;
 
 import app.entities.Material;
 import app.entities.Order;
+import app.entities.OrderWithShed;
+import app.entities.Shed;
 import app.exceptions.DatabaseException;
 import app.persistence.MaterialMapper;
 
@@ -21,6 +23,8 @@ public class CarportCalculatorService {
         addSterns(order, materials);
         addRoofSheets(order, materials);
 
+        addShed(order, materials);
+
         BigDecimal materialsTotal = materials.stream()
                 .map(Material::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -29,6 +33,51 @@ public class CarportCalculatorService {
 
         order.setMaterials(materials);
         order.setTotalPrice(materialsTotal.add(slopePrice));
+    }
+
+    private void addShed(Order order, List<Material> materials) throws DatabaseException {
+
+        if (!(order instanceof OrderWithShed ows)) {
+            return;
+        }
+        if (ows.getShed() == null) {
+            return;
+        }
+
+        Shed shed = ows.getShed();
+        int shedWidth  = shed.getWidthMM();
+        int shedLength = shed.getLengthMM();
+
+        int wallHeightMM = 2200;
+
+        int boardCoverWidthMM = 100;
+
+        int perimeterMM = 2 * (shedWidth + shedLength);
+
+        int boardsPerLayer = (int) Math.ceil(perimeterMM / (double) boardCoverWidthMM);
+
+        int totalBoards = boardsPerLayer * 2;
+
+        Material claddingBoard = MaterialMapper.findCladdingForHeight(wallHeightMM);
+
+        BigDecimal shedCladdingPrice =
+                claddingBoard.getUnitPrice().multiply(BigDecimal.valueOf(totalBoards));
+
+        materials.add(new Material(
+                0,
+                order.getId(),
+                claddingBoard.getProductId(),
+                totalBoards,
+                shedCladdingPrice,
+                "Beklædning til redskabsrum",
+                claddingBoard.getProductName(),
+                claddingBoard.getProductDescription(),
+                claddingBoard.getLengthMM(),
+                claddingBoard.getUnitName(),
+                claddingBoard.getUnitShortName(),
+                claddingBoard.getUnitPrice()
+        ));
+
     }
 
     private int calculatePostsForLength(int lengthMM) {
@@ -167,7 +216,6 @@ public class CarportCalculatorService {
                 underWidth.getUnitPrice()
         ));
 
-        // OVERSTERN
         Material overLength = MaterialMapper.findOverSternForLength(lengthMM);
         Material overWidth  = MaterialMapper.findOverSternForLength(widthMM);
 

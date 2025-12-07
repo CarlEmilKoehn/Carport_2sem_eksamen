@@ -318,4 +318,46 @@ public class MaterialMapper {
             throw new DatabaseException("Could not connect to DB: ", e.getMessage());
         }
     }
+
+    public static Material findCladdingForHeight(int minLengthMM) throws DatabaseException {
+
+        String sql = "SELECT " +
+                     "mp.material_product_id, mp.material_product_name, mp.material_product_description, " +
+                     "mp.length_mm, mp.material_price, " +
+                     "u.unit_name, u.unit_short_name " +
+                     "FROM material_product mp " +
+                     "JOIN unit u ON mp.unit_id = u.unit_id " +
+                     "JOIN material_category mc ON mp.material_category_id = mc.material_category_id " +
+                     "WHERE mp.length_mm >= ? " +
+                     "AND mc.material_category_name = 'Beklædning' " +
+                     "ORDER BY mp.length_mm ASC " +
+                     "LIMIT 1;";
+
+        try (Connection connection = ConnectionPool.getInstance().getConnection()) {
+            PreparedStatement ps = connection.prepareStatement(sql);
+
+            ps.setInt(1, minLengthMM);
+
+            try (ResultSet rs = ps.executeQuery()) {
+
+                if (rs.next()) {
+
+                    return new Material(
+                            rs.getInt("material_product_id"),
+                            rs.getString("material_product_name"),
+                            rs.getString("material_product_description"),
+                            rs.getInt("length_mm"),
+                            rs.getBigDecimal("material_price"),
+                            rs.getString("unit_name"),
+                            rs.getString("unit_short_name")
+                    );
+                }
+            }
+
+            throw new DatabaseException("No cladding boards were found, of the length >= ", String.valueOf(minLengthMM));
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+        }
+    }
 }
