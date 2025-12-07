@@ -5,7 +5,6 @@ import app.exceptions.DatabaseException;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,28 +13,23 @@ class MaterialMapperTest {
 
     @Test
     void getAllMaterialsFromOrder() {
-
         int orderId = 1;
-
-        List<Material> expected = new ArrayList<>();
-
-        expected.add(new Material(
-
-        ));
-
-        expected.add(new Material(
-
-        ));
 
         try {
             List<Material> actual = MaterialMapper.getAllMaterialsFromOrder(orderId);
 
             assertNotNull(actual);
-            assertEquals(expected.size(), actual.size());
-            assertEquals(expected, actual);
+            assertFalse(actual.isEmpty());
+
+            assertTrue(actual.stream().allMatch(m -> m.getOrderId() == orderId));
+
+            Material first = actual.get(0);
+            assertNotNull(first.getProductName());
+            assertNotNull(first.getUnitShortName());
+            assertNotNull(first.getUnitPrice());
 
         } catch (DatabaseException e) {
-            assert false;
+            fail(e.getMessage());
         }
     }
 
@@ -44,21 +38,16 @@ class MaterialMapperTest {
 
         int minLengthMM = 180;
 
-        Material expected = new Material(
-                42,
-                "97x97 mm. trykimp. Stolpe",
-                "Stolper nedgraves 90 cm. i jord",
-                180,
-                new BigDecimal("82.70"),
-                "Styk",
-                "Stk"
-        );
-
         try {
-            Material actual = MaterialMapper.findPostForLength(300);
+            Material actual = MaterialMapper.findPostForLength(minLengthMM);
 
             assertNotNull(actual);
-            assertEquals(expected, actual);
+            assertEquals("97x97 mm. trykimp. Stolpe", actual.getProductName());
+            assertEquals("Stolper nedgraves 90 cm. i jord", actual.getProductDescription());
+            assertEquals(Integer.valueOf(180), actual.getLengthMM());
+            assertEquals(new BigDecimal("82.70"), actual.getUnitPrice());
+            assertEquals("Styk", actual.getUnitName());
+            assertEquals("Stk", actual.getUnitShortName());
 
         } catch (DatabaseException e) {
             fail(e.getMessage());
@@ -68,40 +57,48 @@ class MaterialMapperTest {
     @Test
     void findRemForLength() {
 
-        int minLengthMM;
-
-        Material expected = new Material(
-
-        );
+        int minLengthMM = 310;
 
         try {
             Material actual = MaterialMapper.findRemForLength(minLengthMM);
 
             assertNotNull(actual);
-            assertEquals(expected, actual);
+            assertEquals("45x195 mm. spærtræ ubh.", actual.getProductName());
+            assertEquals(
+                    "Remme i sider, saddles ned i stolper (skur del, deles) og/el. spær, monteres på rem",
+                    actual.getProductDescription()
+            );
+            assertEquals(Integer.valueOf(360), actual.getLengthMM());
+            assertEquals(new BigDecimal("190.61"), actual.getUnitPrice());
+            assertEquals("Styk", actual.getUnitName());
+            assertEquals("Stk", actual.getUnitShortName());
 
         } catch (DatabaseException e) {
-            assert false;
+            fail(e.getMessage());
         }
     }
 
     @Test
     void findRafterForLength() {
 
-        int minLengthMM;
-
-        Material expected = new Material(
-
-        );
+        int minLengthMM = 500;
 
         try {
             Material actual = MaterialMapper.findRafterForLength(minLengthMM);
 
             assertNotNull(actual);
-            assertEquals(expected, actual);
+            assertEquals("45x195 mm. spærtræ ubh.", actual.getProductName());
+            assertEquals(
+                    "Remme i sider, saddles ned i stolper (skur del, deles) og/el. spær, monteres på rem",
+                    actual.getProductDescription()
+            );
+            assertEquals(Integer.valueOf(540), actual.getLengthMM());
+            assertEquals(new BigDecimal("285.93"), actual.getUnitPrice());
+            assertEquals("Styk", actual.getUnitName());
+            assertEquals("Stk", actual.getUnitShortName());
 
         } catch (DatabaseException e) {
-            assert false;
+            fail(e.getMessage());
         }
     }
 
@@ -110,21 +107,19 @@ class MaterialMapperTest {
 
         int minLengthMM = 310;
 
-        Material expected = new Material(
-                2,
-                "25x200 mm. trykimp. Brædt",
-                "understernbrædder til for & bag ende og/el. side.",
-                360,
-                new BigDecimal("171.21"),
-                "Styk",
-                "Stk"
-        );
-
         try {
             Material actual = MaterialMapper.findUnderSternForLength(minLengthMM);
 
             assertNotNull(actual);
-            assertEquals(expected, actual);
+            assertEquals("25x200 mm. trykimp. Brædt", actual.getProductName());
+            assertEquals(
+                    "understernbrædder til for & bag ende og/el. side.",
+                    actual.getProductDescription()
+            );
+            assertEquals(Integer.valueOf(360), actual.getLengthMM());
+            assertEquals(new BigDecimal("171.21"), actual.getUnitPrice());
+            assertEquals("Styk", actual.getUnitName());
+            assertEquals("Stk", actual.getUnitShortName());
 
         } catch (DatabaseException e) {
             fail(e.getMessage());
@@ -136,21 +131,19 @@ class MaterialMapperTest {
 
         int minLengthMM = 310;
 
-        Material expected = new Material(
-                8,
-                "25x125mm. trykimp. Brædt",
-                "oversternbrædder til forenden og/el. siderne",
-                360,
-                new BigDecimal("125.81"),
-                "Styk",
-                "Stk"
-        );
-
         try {
             Material actual = MaterialMapper.findOverSternForLength(minLengthMM);
 
             assertNotNull(actual);
-            assertEquals(expected, actual);
+            assertEquals("25x125mm. trykimp. Brædt", actual.getProductName());
+            assertEquals(
+                    "oversternbrædder til forenden og/el. siderne",
+                    actual.getProductDescription()
+            );
+            assertEquals(Integer.valueOf(360), actual.getLengthMM());
+            assertEquals(new BigDecimal("125.81"), actual.getUnitPrice());
+            assertEquals("Styk", actual.getUnitName());
+            assertEquals("Stk", actual.getUnitShortName());
 
         } catch (DatabaseException e) {
             fail(e.getMessage());
@@ -162,21 +155,16 @@ class MaterialMapperTest {
 
         int minLengthMM = 300;
 
-        Material expected = new Material(
-                63,
-                "Plastmo Ecolite blåtonet",
-                "tagplader monteres på spær",
-                300,
-                new BigDecimal("179.00"),
-                "Styk",
-                "Stk"
-        );
-
         try {
             Material actual = MaterialMapper.findRoofSheetForLength(minLengthMM);
 
             assertNotNull(actual);
-            assertEquals(expected, actual);
+            assertEquals("Plastmo Ecolite blåtonet", actual.getProductName());
+            assertEquals("tagplader monteres på spær", actual.getProductDescription());
+            assertEquals(Integer.valueOf(300), actual.getLengthMM());
+            assertEquals(new BigDecimal("179.00"), actual.getUnitPrice());
+            assertEquals("Styk", actual.getUnitName());
+            assertEquals("Stk", actual.getUnitShortName());
 
         } catch (DatabaseException e) {
             fail(e.getMessage());
