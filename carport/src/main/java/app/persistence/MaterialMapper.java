@@ -81,7 +81,9 @@ public class MaterialMapper {
                      "u.unit_name, u.unit_short_name " +
                      "FROM material_product mp " +
                      "JOIN unit u ON mp.unit_id = u.unit_id " +
+                     "JOIN material_category mc ON mp.material_category_id = mc.material_category_id " +
                      "WHERE mp.length_mm >= ? " +
+                     "AND mc.material_category_name = 'Stolper' " +
                      "ORDER BY mp.length_mm ASC " +
                      "LIMIT 1;";
 
@@ -121,7 +123,7 @@ public class MaterialMapper {
                      "FROM material_product mp " +
                      "JOIN unit u ON mp.unit_id = u.unit_id " +
                      "WHERE mp.length_mm >= ? " +
-                     "AND mc.material_category_name = 'Rem' " +
+                     "AND mc.material_category_name = 'Rem/Spær' " +
                      "ORDER BY mp.length_mm ASC " +
                      "LIMIT 1;";
 
@@ -162,7 +164,7 @@ public class MaterialMapper {
                      "JOIN unit u ON mp.unit_id = u.unit_id " +
                      "JOIN material_category mc ON mp.material_category_id = mc.material_category_id " +
                      "WHERE mp.length_mm >= ? " +
-                     "AND mc.material_category_name = 'Spær' " +
+                     "AND mc.material_category_name = 'Rem/Spær' " +
                      "ORDER BY mp.length_mm ASC " +
                      "LIMIT 1;";
 
@@ -201,8 +203,9 @@ public class MaterialMapper {
                      "u.unit_name, u.unit_short_name " +
                      "FROM material_product mp " +
                      "JOIN unit u ON mp.unit_id = u.unit_id " +
+                     "JOIN material_category mc ON mp.material_category_id = mc.material_category_id " +
                      "WHERE mp.length_mm >= ? " +
-                     "AND  mp.material_product_description ILIKE '%understernbrædder%' " +
+                     "AND mc.material_category_name = 'Understern' " +
                      "ORDER BY mp.length_mm ASC " +
                      "LIMIT 1;";
 
@@ -241,8 +244,9 @@ public class MaterialMapper {
                      "u.unit_name, u.unit_short_name " +
                      "FROM material_product mp " +
                      "JOIN unit u ON mp.unit_id = u.unit_id " +
+                     "JOIN material_category mc ON mp.material_category_id = mc.material_category_id " +
                      "WHERE mp.length_mm >= ? " +
-                     "AND mp.material_product_description ILIKE '%oversternbrædder%' " +
+                     "AND mc.material_category_name = 'Overstern' " +
                      "ORDER BY mp.length_mm ASC " +
                      "LIMIT 1;";
 
@@ -281,8 +285,9 @@ public class MaterialMapper {
                      "u.unit_name, u.unit_short_name " +
                      "FROM material_product mp " +
                      "JOIN unit u ON mp.unit_id = u.unit_id " +
+                     "JOIN material_category mc ON mp.material_category_id = mc.material_category_id " +
                      "WHERE mp.length_mm >= ? " +
-                     "AND mp.material_product_description ILIKE '%tagplader monteres på spær%' " +
+                     "AND mc.material_category_name = 'Tagplader' " +
                      "ORDER BY mp.length_mm ASC " +
                      "LIMIT 1;";
 

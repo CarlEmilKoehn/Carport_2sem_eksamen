@@ -21,14 +21,14 @@ public class CarportCalculatorService {
         addSterns(order, materials);
         addRoofSheets(order, materials);
 
-        BigDecimal total = materials.stream()
+        BigDecimal materialsTotal = materials.stream()
                 .map(Material::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal slopePrice = calculateSlopePrice(order);
 
         order.setMaterials(materials);
-        order.setTotalPrice(total);
+        order.setTotalPrice(materialsTotal.add(slopePrice));
     }
 
     private int calculatePostsForLength(int lengthMM) {
@@ -120,7 +120,94 @@ public class CarportCalculatorService {
 
     private void addSterns(Order order, List<Material> materials) throws DatabaseException {
 
+        int lengthMM = order.getLengthMM();
+        int widthMM  = order.getWidthMM();
 
+        int boardsOnLengthSides = 2;
+        int boardsOnWidthSides  = 2;
+
+        Material underLength = MaterialMapper.findUnderSternForLength(lengthMM);
+        Material underWidth  = MaterialMapper.findUnderSternForLength(widthMM);
+
+        int qtyUnderLength = boardsOnLengthSides;
+        int qtyUnderWidth  = boardsOnWidthSides;
+
+        BigDecimal underLengthPrice = underLength.getUnitPrice()
+                .multiply(BigDecimal.valueOf(qtyUnderLength));
+        BigDecimal underWidthPrice = underWidth.getUnitPrice()
+                .multiply(BigDecimal.valueOf(qtyUnderWidth));
+
+        materials.add(new Material(
+                0,
+                order.getId(),
+                underLength.getProductId(),
+                qtyUnderLength,
+                underLengthPrice,
+                "Understern på langsider",
+                underLength.getProductName(),
+                underLength.getProductDescription(),
+                underLength.getLengthMM(),
+                underLength.getUnitName(),
+                underLength.getUnitShortName(),
+                underLength.getUnitPrice()
+        ));
+
+        materials.add(new Material(
+                0,
+                order.getId(),
+                underWidth.getProductId(),
+                qtyUnderWidth,
+                underWidthPrice,
+                "Understern på for/bag",
+                underWidth.getProductName(),
+                underWidth.getProductDescription(),
+                underWidth.getLengthMM(),
+                underWidth.getUnitName(),
+                underWidth.getUnitShortName(),
+                underWidth.getUnitPrice()
+        ));
+
+        // OVERSTERN
+        Material overLength = MaterialMapper.findOverSternForLength(lengthMM);
+        Material overWidth  = MaterialMapper.findOverSternForLength(widthMM);
+
+        int qtyOverLength = boardsOnLengthSides;
+        int qtyOverWidth  = boardsOnWidthSides;
+
+        BigDecimal overLengthPrice = overLength.getUnitPrice()
+                .multiply(BigDecimal.valueOf(qtyOverLength));
+        BigDecimal overWidthPrice = overWidth.getUnitPrice()
+                .multiply(BigDecimal.valueOf(qtyOverWidth));
+
+        materials.add(new Material(
+                0,
+                order.getId(),
+                overLength.getProductId(),
+                qtyOverLength,
+                overLengthPrice,
+                "Overstern på langsider",
+                overLength.getProductName(),
+                overLength.getProductDescription(),
+                overLength.getLengthMM(),
+                overLength.getUnitName(),
+                overLength.getUnitShortName(),
+                overLength.getUnitPrice()
+        ));
+
+        materials.add(new Material(
+                0,
+                order.getId(),
+                overWidth.getProductId(),
+                qtyOverWidth,
+                overWidthPrice,
+                "Overstern på for/bag",
+                overWidth.getProductName(),
+                overWidth.getProductDescription(),
+                overWidth.getLengthMM(),
+                overWidth.getUnitName(),
+                overWidth.getUnitShortName(),
+                overWidth.getUnitPrice()
+        ));
     }
 
 
