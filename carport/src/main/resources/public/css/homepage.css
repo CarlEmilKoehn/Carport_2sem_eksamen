@@ -1,5 +1,4 @@
 * {
-    font-family: system-ui, "Segoe UI", sans-serif, Roboto, Helvetica, Arial, sans-serif;
     box-sizing: border-box;
     margin: 0;
     padding: 0;
@@ -8,11 +7,17 @@
 :root {
     --fog-blue: #003b6f;
     --bg-light: #F5F5F3;
+    --bg-headerandfooter: #ffffff;
     --border-light: #e2e2de;
-    --text-main: #222222;
+    --text-main: black;
+}
+
+html {
+scroll-behavior: smooth;
 }
 
 body {
+    font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background: var(--bg-light);
     color: var(--text-main);
 }
@@ -21,13 +26,14 @@ body {
     position: sticky;
     top: 0;
     z-index: 1000;
-    background: #ffffff;
+    background: var(--bg-headerandfooter);
 }
 
 .topbar-inner {
+    width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 40px;
+    padding-inline: 40px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -36,12 +42,18 @@ body {
 
 .headerLogo {
     display: block;
+    align-self: flex-start;
+    margin-right: auto;
+    margin-left: -40px;
 }
 
 .mainNav {
+    font-family: Dinpro, helvetica, arial, sans-serif;
     display: flex;
-    align-items: center;
+    align-self: center;
+    margin-left: -20px;
     gap: 40px;
+
 }
 
 .headerButton {
@@ -53,6 +65,14 @@ body {
 
 .headerButton:hover {
     text-decoration: underline;
+}
+
+.cardsSection {
+    background-image: url("../images/carportBackgroundPic1.png");
+    background-repeat: no-repeat;
+    background-position: center top;
+    background-size: cover;
+    padding: 120px 0;
 }
 
 main.cards {
@@ -109,12 +129,28 @@ footer nav {
     align-items: flex-start;
 }
 
+.mainFooterButton {
+    display: block;
+    text-decoration: none;
+    font-family: Dinpro, helvetica, arial, sans-serif;
+    color: #000000;
+    font-weight: 700;
+    font-size: 17px;
+    margin-bottom: 8px;
+}
+
+.mainFooterButton:hover {
+    text-decoration: underline;
+}
+
+
 .footerButton {
     display: block;
     text-decoration: none;
     color: #000000;
-    font-size: 13px;
-    margin-bottom: 4px;
+    font-weight: 450;
+    font-size: 16px;
+    line-height: 1.9;
 }
 
 .footerButton:hover {
