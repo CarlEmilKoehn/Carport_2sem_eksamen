@@ -1,6 +1,5 @@
 package app.persistence;
 import app.entities.Material;
-import app.entities.Order;
 import app.exceptions.DatabaseException;
 
 import java.math.BigDecimal;
@@ -12,6 +11,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MaterialMapper {
+
+    public static void setAllMaterialsToOrder(int orderId, List<Material> materials) throws DatabaseException{
+
+        String sql = "INSERT INTO public.order_material (user_order_id, material_product_id, quantity, note, total_price) " +
+                     "VALUES (?, ?, ?, ?, ?)";
+
+        try(Connection connection = ConnectionPool.getInstance().getConnection()) {
+            PreparedStatement ps = connection.prepareStatement(sql);
+
+            ps.setInt(1, orderId);
+
+            for (Material m : materials) {
+
+                ps.setInt(1, orderId);
+                ps.setInt(2, m.getProductId());
+                ps.setInt(3, m.getQuantity());
+                ps.setString(4, m.getNote());
+                ps.setBigDecimal(5, m.getTotalPrice());
+
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Could not save materials: ", e.getMessage());
+        }
+    }
 
     public static List<Material> getAllMaterialsFromOrder(int orderId) throws DatabaseException {
 
@@ -31,43 +58,45 @@ public class MaterialMapper {
 
             ps.setInt(1, orderId);
 
-            ResultSet rs = ps.executeQuery();
+            try (ResultSet rs = ps.executeQuery()) {
 
-            while (rs.next()) {
+                while (rs.next()) {
 
-                int orderMaterialId = rs.getInt("order_material_id");
-                int userOrderId = rs.getInt("user_order_id");
-                int materialProductId = rs.getInt("material_product_id");
-                int quantity = rs.getInt("quantity");
-                String note = rs.getString("note");
-                BigDecimal totalPrice = rs.getBigDecimal("total_price");
+                    int orderMaterialId = rs.getInt("order_material_id");
+                    int userOrderId = rs.getInt("user_order_id");
+                    int materialProductId = rs.getInt("material_product_id");
+                    int quantity = rs.getInt("quantity");
+                    String note = rs.getString("note");
+                    BigDecimal totalPrice = rs.getBigDecimal("total_price");
 
-                String productName = rs.getString("material_product_name");
-                String productDescription = rs.getString("material_product_description");
-                Integer lengthMM = rs.getObject("length_mm", Integer.class);
-                BigDecimal unitPrice = rs.getBigDecimal("material_price");
-                String unitName = rs.getString("unit_name");
-                String unitShortName = rs.getString("unit_short_name");
+                    String productName = rs.getString("material_product_name");
+                    String productDescription = rs.getString("material_product_description");
+                    Integer lengthMM = rs.getObject("length_mm", Integer.class);
+                    BigDecimal unitPrice = rs.getBigDecimal("material_price");
+                    String unitName = rs.getString("unit_name");
+                    String unitShortName = rs.getString("unit_short_name");
 
-                Material material = new Material(
-                        orderMaterialId,
-                        userOrderId,
-                        materialProductId,
-                        quantity,
-                        totalPrice,
-                        note,
-                        productName,
-                        productDescription,
-                        lengthMM,
-                        unitName,
-                        unitShortName,
-                        unitPrice
-                );
+                    Material material = new Material(
+                            orderMaterialId,
+                            userOrderId,
+                            materialProductId,
+                            quantity,
+                            totalPrice,
+                            note,
+                            productName,
+                            productDescription,
+                            lengthMM,
+                            unitName,
+                            unitShortName,
+                            unitPrice
+                    );
 
-                materials.add(material);
+                    materials.add(material);
+                }
+
+                return materials;
+
             }
-
-            return materials;
             
         } catch (SQLException e) {
             throw new DatabaseException("Could not connect to DB: ", e.getMessage());
@@ -122,6 +151,7 @@ public class MaterialMapper {
                      "u.unit_name, u.unit_short_name " +
                      "FROM public.material_product mp " +
                      "JOIN unit u ON mp.unit_id = u.unit_id " +
+                     "JOIN material_category mc ON mp.material_category_id = mc.material_category_id " +
                      "WHERE mp.length_mm >= ? " +
                      "AND mc.material_category_name = 'Rem/Spær' " +
                      "ORDER BY mp.length_mm ASC " +
