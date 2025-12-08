@@ -21,7 +21,7 @@ public class MaterialMapper {
                      "om.order_material_id, om.user_order_id, om.material_product_id, om.quantity, om.note, om.total_price, " +
                      "mp.material_product_name, mp.material_product_description, mp.length_mm, mp.material_price, " +
                      "u.unit_name, u.unit_short_name " +
-                     "FROM order_material om " +
+                     "FROM public.order_material om " +
                      "JOIN material_product mp ON om.material_product_id = mp.material_product_id " +
                      "JOIN unit u ON mp.unit_id = u.unit_id " +
                      "WHERE om.user_order_id = ?;";
@@ -79,7 +79,7 @@ public class MaterialMapper {
         String sql = "SELECT " +
                      "mp.material_product_id, mp.material_product_name, mp.material_product_description, mp.length_mm, mp.material_price, " +
                      "u.unit_name, u.unit_short_name " +
-                     "FROM material_product mp " +
+                     "FROM public.material_product mp " +
                      "JOIN unit u ON mp.unit_id = u.unit_id " +
                      "JOIN material_category mc ON mp.material_category_id = mc.material_category_id " +
                      "WHERE mp.length_mm >= ? " +
@@ -120,7 +120,7 @@ public class MaterialMapper {
         String sql = "SELECT " +
                      "mp.material_product_id, mp.material_product_name, mp.material_product_description, mp.length_mm, mp.material_price, " +
                      "u.unit_name, u.unit_short_name " +
-                     "FROM material_product mp " +
+                     "FROM public.material_product mp " +
                      "JOIN unit u ON mp.unit_id = u.unit_id " +
                      "WHERE mp.length_mm >= ? " +
                      "AND mc.material_category_name = 'Rem/Spær' " +
@@ -160,7 +160,7 @@ public class MaterialMapper {
         String sql = "SELECT " +
                      "mp.material_product_id, mp.material_product_name, mp.material_product_description, mp.length_mm, mp.material_price, " +
                      "u.unit_name, u.unit_short_name " +
-                     "FROM material_product mp " +
+                     "FROM public.material_product mp " +
                      "JOIN unit u ON mp.unit_id = u.unit_id " +
                      "JOIN material_category mc ON mp.material_category_id = mc.material_category_id " +
                      "WHERE mp.length_mm >= ? " +
@@ -201,7 +201,7 @@ public class MaterialMapper {
         String sql = "SELECT " +
                      "mp.material_product_id, mp.material_product_name, mp.material_product_description, mp.length_mm, mp.material_price, " +
                      "u.unit_name, u.unit_short_name " +
-                     "FROM material_product mp " +
+                     "FROM public.material_product mp " +
                      "JOIN unit u ON mp.unit_id = u.unit_id " +
                      "JOIN material_category mc ON mp.material_category_id = mc.material_category_id " +
                      "WHERE mp.length_mm >= ? " +
@@ -242,7 +242,7 @@ public class MaterialMapper {
         String sql = "SELECT " +
                      "mp.material_product_id, mp.material_product_name, mp.material_product_description, mp.length_mm, mp.material_price, " +
                      "u.unit_name, u.unit_short_name " +
-                     "FROM material_product mp " +
+                     "FROM public.material_product mp " +
                      "JOIN unit u ON mp.unit_id = u.unit_id " +
                      "JOIN material_category mc ON mp.material_category_id = mc.material_category_id " +
                      "WHERE mp.length_mm >= ? " +
@@ -283,7 +283,7 @@ public class MaterialMapper {
         String sql = "SELECT " +
                      "mp.material_product_id, mp.material_product_name, mp.material_product_description, mp.length_mm, mp.material_price, " +
                      "u.unit_name, u.unit_short_name " +
-                     "FROM material_product mp " +
+                     "FROM public.material_product mp " +
                      "JOIN unit u ON mp.unit_id = u.unit_id " +
                      "JOIN material_category mc ON mp.material_category_id = mc.material_category_id " +
                      "WHERE mp.length_mm >= ? " +
@@ -325,7 +325,7 @@ public class MaterialMapper {
                      "mp.material_product_id, mp.material_product_name, mp.material_product_description, " +
                      "mp.length_mm, mp.material_price, " +
                      "u.unit_name, u.unit_short_name " +
-                     "FROM material_product mp " +
+                     "FROM public.material_product mp " +
                      "JOIN unit u ON mp.unit_id = u.unit_id " +
                      "JOIN material_category mc ON mp.material_category_id = mc.material_category_id " +
                      "WHERE mp.length_mm >= ? " +

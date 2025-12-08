@@ -16,7 +16,7 @@ public class CustomerMapper {
 
         Customer customer;
 
-        String sql = "SELECT * FROM public.\"customer\" WHERE email = ?";
+        String sql = "SELECT * FROM public.customer WHERE email = ?";
 
         try (Connection connection = ConnectionPool.getInstance().getConnection()) {
 
@@ -47,7 +47,7 @@ public class CustomerMapper {
 
         List<Customer> users = new ArrayList<>();
 
-        String sql = "SELECT * FROM public.\"user\"";
+        String sql = "SELECT * FROM public.user";
         try(Connection connection = ConnectionPool.getInstance().getConnection()) {
 
             PreparedStatement stmt = connection.prepareStatement(sql);
@@ -72,7 +72,7 @@ public class CustomerMapper {
     }
 
     public static void registerCustomer(String email, String firstName, String lastName, String address, int postalCode) throws DatabaseException {
-        String sql = "INSERT INTO public.\"customer\" (email, firstname, lastname, address, postal_code) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO public.customer (email, firstname, lastname, address, postal_code) VALUES (?, ?, ?, ?, ?)";
 
         try(Connection connection = ConnectionPool.getInstance().getConnection()) {
             PreparedStatement ps = connection.prepareStatement(sql);
@@ -89,7 +89,7 @@ public class CustomerMapper {
 
     public static boolean isEmailInSystem(String email) throws DatabaseException {
 
-        String sql = "SELECT email FROM public.\"customer\" WHERE email = ?";
+        String sql = "SELECT email FROM public.customer WHERE email = ?";
 
         try(Connection connection = ConnectionPool.getInstance().getConnection()) {
 
