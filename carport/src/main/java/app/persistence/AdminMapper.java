@@ -41,12 +41,13 @@ public class AdminMapper {
             if (rs.next()) {
                 String firstname = rs.getString("admin_firstname");
                 String lastname = rs.getString("admin_lastname");
-                return new Admin(email, firstname, lastname);
+                return new Admin(email, null, firstname, lastname);
             } else {
                 throw new DatabaseException("Kunne ikke hente admin med email: " + email + " fra databasen");
             }
         } catch (SQLException e) {
             throw new DatabaseException("Fejl ved hentning af admin: " + e.getMessage());
+            //Inset values and atddtitions
         }
     }
 
@@ -61,9 +62,10 @@ public class AdminMapper {
 
             while (rs.next()) {
                 String email = rs.getString("admin_email");
+                String password = rs.getString("admin_password");
                 String firstname = rs.getString("admin_firstname");
                 String lastname = rs.getString("admin_lastname");
-                admins.add(new Admin(email, firstname, lastname));
+                admins.add(new Admin(email, password, firstname, lastname));
             }
             return admins;
         } catch (SQLException e) {
@@ -113,7 +115,7 @@ public class AdminMapper {
             if (rs.next()) {
                 String firstname = rs.getString("admin_firstname");
                 String lastname = rs.getString("admin_lastname");
-                    return new Admin(email, firstname, lastname);
+                    return new Admin(email, password, firstname, lastname);
 
             } else {
                 throw new DatabaseException("Ugyldig email eller password");

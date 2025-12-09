@@ -1,68 +1,239 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="dk" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Fog - Holder i længden</title>
+
+    <link rel="icon" type="image/x-icon" th:href="@{/images/favicon.ico}">
+    <link rel="stylesheet" th:href="@{/css/homepage.css}">
 </head>
 <body>
-<svg version="1.1"
-     xmlns="http://www.w3.org/2000/svg"
-     xmlns:xlink="http://www.w3.org/1999/xlink"
-     height="100%" viewBox="0 0 855 690"
-     preserveAspectRatio="xMinYMin">
 
-    <defs>
-        <marker id="beginArrow" markerWidth="12" markerHeight="12" refX="0" refY="6" orient="auto">
-            <path d="M0,6 L12,0 L12,12 L0,6" style="fill: #000000;" />
-        </marker>
-        <marker id="endArrow" markerWidth="12" markerHeight="12" refX="12" refY="6" orient="auto">
-            <path d="M0,0 L12,6 L0,12 L0,0 " style="fill: #000000;" />
-        </marker>
-    </defs>
+<header id="top" class="topbar">
+    <div class="topbar-inner">
+        <img th:src="@{/images/foglogo.png}"
+             src="/images/foglogo.png"
+             alt="logo"
+             class="headerLogo"
+             height="100"
+             width="100">
 
-    <!-- Ramme -->
+        <nav class="mainNav">
+            <a href="https://www.johannesfog.dk/have-fritid/carporte/enkelt-carporte"
+               class="headerButton"
+               target="_blank"
+               rel="noopener">
+                Standard Carport
+            </a>
+            <a th:href="@{/customMadeCarport}"
+               class="headerButton"
+               target="_self">
+                Skræddersyet Carport
+            </a>
+        </nav>
+    </div>
+</header>
+<section class="cardsSection">
+<main class="cards">
+    <article class="card">
+        <h3> Se vores store udvalg af Carporte</h3>
+        <img th:src="@{/images/standardCarportLogo.png}"
+             src="/images/standardCarportLogo.png"
+             alt="Standard Carport">
+        <a href="https://www.johannesfog.dk/have-fritid/carporte/enkelt-carporte"
+           class="cardButton"
+           target="_blank"
+           rel="noopener">
+            Se udvalget
+        </a>
+    </article>
+
+    <article class="card">
+        <h3> Få en skræddersyet Carport løsning</h3>
+        <img th:src="@{/images/tailorCarportLogo.png}"
+             src="/images/tailorCarportLogo.png"
+             alt="Skræddersyet Carport">
+        <a th:href="@{/customMadeCarport}"
+           class="cardButton"
+           target="_self">
+            Få en skræddersyet løsning
+        </a>
+    </article>
+</main>
+</section>
+
+<footer>
+    <nav class="footerNav">
+        <div class="footerColumn">
+            <a href="https://www.johannesfog.dk/om-fog/kundeservice"
+               class="mainFooterButton" target="_blank" rel="noopener">
+                Kundeservice </a>
+
+            <a href="https://www.johannesfog.dk/om-fog/kontakt"
+               class="footerButton" target="_blank" rel="noopener">
+                Kontakt Fog </a>
+
+            <a href="https://www.johannesfog.dk/om-fog/kundeservice/ofte-stillede-spoergsmaal"
+               class="footerButton" target="_blank" rel="noopener">
+                Ofte stillede spørgsmål </a>
+
+            <a href="https://www.johannesfog.dk/om-fog/kundeservice/koebs-og-leveringsvilkaar-online"
+               class="footerButton" target="_blank" rel="noopener">
+                Købs- og leveringsvilkår online </a>
+
+            <a href="https://www.johannesfog.dk/om-fog/kundeservice/fortrydelse-og-returnering"
+               class="footerButton" target="_blank" rel="noopener">
+                Fortrydelse og returnering </a>
+
+            <a href="https://www.johannesfog.dk/om-fog/kundeservice/reklamation-og-klage"
+               class="footerButton" target="_blank" rel="noopener">
+                Reklamation og klage </a>
+
+            <a href="https://www.johannesfog.dk/om-fog/kundeservice/fragt"
+               class="footerButton" target="_blank" rel="noopener">
+                Fragt </a>
+
+            <a href="https://www.johannesfog.dk/om-fog/kundeservice/prismatch"
+               class="footerButton" target="_blank" rel="noopener">
+                Prismatch </a>
+
+            <a href="https://www.johannesfog.dk/om-fog/service/laan-en-trailer"
+               class="footerButton" target="_blank" rel="noopener">
+                Lån en trailer </a>
+
+            <a href="https://www.johannesfog.dk/om-fog/service/udlejning"
+               class="footerButton" target="_blank" rel="noopener">
+                Udlejning </a>
+
+            <a href="https://www.johannesfog.dk/om-fog/kundeservice/fog-konto"
+               class="footerButton" target="_blank" rel="noopener">
+                Bliv kontokunde </a>
+
+        </div>
+
+        <div class="footerColumn">
+            <a href="https://www.johannesfog.dk/om-fog/aktuelt"
+               class="mainFooterButton" target="_blank" rel="noopener">
+                Aktuelt </a>
+
+            <a href="https://www.johannesfog.dk/brands"
+               class="footerButton" target="_blank" rel="noopener">
+                Mærker </a>
+
+            <a href="https://www.johannesfog.dk/om-fog/aktuelt/aviser-og-kataloger"
+               class="footerButton" target="_blank" rel="noopener">
+                Aviser og kataloger </a>
+
+            <a href="https://www.johannesfog.dk/om-fog/nyhedsbrev"
+               class="footerButton" target="_blank" rel="noopener">
+                Tilmeld nyhedsbrev </a>
+
+            <a href="https://www.johannesfog.dk/inspiration"
+               class="footerButton" target="_blank" rel="noopener">
+                Inspiration og guides </a>
+
+            <a href="https://www.linkedin.com/company/xlbyg-fog/"
+               class="footerButton" target="_blank" rel="noopener">
+                LinkedIn </a>
+
+            <a href="https://www.instagram.com/fogboligdesign/"
+               class="footerButton" target="_blank" rel="noopener">
+                Instagram </a>
+
+            <a href="https://www.facebook.com/boligdesignhus"
+               class="footerButton" target="_blank" rel="noopener">
+                Facebook </a>
+
+        </div>
+
+        <div class="footerColumn">
+            <a href="https://www.johannesfog.dk/om-fog"
+               class="mainFooterButton" target="_blank" rel="noopener">
+                Om Fog </a>
+
+            <a href="https://www.johannesfog.dk/om-fog/forretninger"
+               class="footerButton" target="_blank" rel="noopener">
+                Åbningstider </a>
+
+            <a href="https://www.johannesfog.dk/om-fog"
+               class="footerButton" target="_blank" rel="noopener">
+                Om Fog </a>
+
+            <a href="https://www.johannesfog.dk/om-fog/fogs-fond"
+               class="footerButton" target="_blank" rel="noopener">
+                Fogs Fond </a>
+
+            <a href="https://www.johannesfog.dk/om-fog/job-i-fog"
+               class="footerButton" target="_blank" rel="noopener">
+                Karriere i Fog </a>
+
+            <a href="https://www.johannesfog.dk/om-fog/kundeservice/fog-konto"
+               class="footerButton" target="_blank" rel="noopener">
+                Bliv kontokunde i Fog </a>
+
+            <a href="https://www.johannesfog.dk/om-fog/betingelser-og-vilkaar/db20-salgs-og-leveringsbetingelser"
+               class="footerButton" target="_blank" rel="noopener">
+                Konto salgs- og leveringsbetingelser </a>
+
+            <a href="https://www.johannesfog.dk/om-fog/betingelser-og-vilkaar/persondatapolitik"
+               class="footerButton" target="_blank" rel="noopener">
+                Persondatapolitik </a>
+
+            <a href="https://www.johannesfog.dk/om-fog/betingelser-og-vilkaar/cookies"
+               class="footerButton" target="_blank" rel="noopener">
+                Cookies </a>
+        </div>
+
+        <div class="footerColumn">
+            <a href="#top" class="mainFooterButton"
+               onclick="scrollToTop(); return false;">
+
+                Med omtanke </a>
+
+            <a href="https://www.johannesfog.dk/om-fog/csr"
+               class="footerButton" target="_blank" rel="noopener">
+                CSR-rapporter </a>
+
+            <a href="https://www.johannesfog.dk/om-fog/certificering"
+               class="footerButton" target="_blank" rel="noopener">
+                Certificering </a>
+
+            <a href="https://www.johannesfog.dk/om-fog/whistleblowerordning"
+               class="footerButton" target="_blank" rel="noopener">
+                Whistleblowerordning </a>
+
+            <a href="https://www.johannesfog.dk/om-fog/whistleblowerpolitik"
+               class="footerButton" target="_blank" rel="noopener">
+                Whistleblowerpolitik </a>
 
 
-    <!-- Pile -->
-    <line x1="40" y1="10" x2="40" y2="610" style="stroke:#000000;
-    marker-start: url(#beginArrow);
-    marker-end: url(#endArrow);" />
+        </div>
+        <div class="footerBrand">
+            <a href="#"
+               onclick="scrollToTop(); return false;">
+                <img th:src="@{/images/foglogo.png}"
+                     src="/images/foglogo.png"
+                     alt="logo"
+                     class="footerLogo"
+                     height="65"
+                     width="65">
+            </a>
+            <p>
+                <b>Johannes Fog A/S</b><br>
+                Firskovvej 20<br>
+                2800 Lyngby
+            </p>
+        </div>
+    </nav>
+</footer>
 
-    <line x1="75" y1="650" x2="855" y2="650" style="stroke:#000000;
-    marker-start: url(#beginArrow);
-    marker-end: url(#endArrow);" />
-
-    <!-- Text: Mål -->
-    <text style="text-anchor: middle" transform="translate(30,300) rotate(-90)">600 cm</text>
-    <text style="text-anchor: middle" x="502" y="670">780 cm</text>
-
-    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="75" y="10" width="800" height="600" viewBox="0 0 780 600" preserveAspectRatio="xMinYMin">
-
-
-        <!-- Ramme -->
-        <rect x="0" y="0" height="600" width="780" style="stroke:#000000; fill: #ffffff" />
-
-        <!-- Remme -->
-        <rect x="0" y="35" height="4.5" width="780" style="stroke:#000000; fill: #ffffff" />
-        <rect x="0" y="565" height="4.5" width="780" style="stroke:#000000; fill: #ffffff" />
-
-        <!-- Spær -->
-        <rect x="0" y="0" height="600" width="4.5" style="stroke:#000000; fill: #ffffff" />
-        <rect x="775.5" y="0" height="600" width="4.5" style="stroke:#000000; fill: #ffffff" />
-
-        <!-- Kryds -->
-        <line x1="55" y1="35" x2="600" y2="569.5" style="stroke:#000000; stroke-dasharray: 5 5;" />
-        <line x1="55" y1="569.5" x2="600" y2="35" style="stroke:#000000; stroke-dasharray: 5 5;" />
-
-        <!-- Stolper -->
-        <rect x="110" y="32" height="9.7" width="10" style="stroke:#000000; fill: #ffffff" />
-        <rect x="420" y="32" height="9.7" width="10" style="stroke:#000000; fill: #ffffff" />
-        <rect x="730" y="32" height="9.7" width="10" style="stroke:#000000; fill: #ffffff" />
-        <rect x="110" y="562" height="9.7" width="10" style="stroke:#000000; fill: #ffffff" />
-        <rect x="420" y="562" height="9.7" width="10" style="stroke:#000000; fill: #ffffff" />
-        <rect x="730" y="562" height="9.7" width="10" style="stroke:#000000; fill: #ffffff" />
-    </svg>
-
-</svg>
 </body>
 </html>
+
+<script>
+    function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+</script>

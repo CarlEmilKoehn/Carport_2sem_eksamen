@@ -13,9 +13,9 @@ public class AdminController {
     public static void addRoutes(Javalin app) {
         app.get("/admin/login", ctx -> ctx.render("admin_login.html"));
         app.post("/admin/login", ctx -> handleLogin(ctx));
-        app.get("/admin/dashboard", ctx -> visDashboard(ctx));
-        app.get("/admin/ordre/{ordreId}", ctx -> visOrdre(ctx));
-        app.post("/admin/ordre/{ordreId}/pris", ctx -> setPris(ctx));
+        app.get("/admin/dashboard", ctx -> showDashboard(ctx));
+        app.get("/admin/ordre/{ordreId}", ctx -> showDashboard(ctx));
+        app.post("/admin/ordre/{ordreId}/pris", ctx -> showDashboard(ctx));
         app.get("/admin/logout", ctx -> logUd(ctx));
     }
 
@@ -39,7 +39,7 @@ public class AdminController {
 
     //Oliver: når order mapper hentAlleOrdrer er implementeret skal ordrerne hentes og sendes til templaten (ctx.attribute)
 
-    private static void visDashboard(Context ctx) {
+    private static void showDashboard(Context ctx) {
         Admin admin = ctx.sessionAttribute("currentAdmin");
 
         if (admin == null) {
@@ -55,7 +55,7 @@ public class AdminController {
     }
 
 
-    // Oliver: Vis ordre og redigeringsmulighed (pris og kommerntar)
+    // Oliver: Vis ordre og redigeringsmulighed (pris og kommentarer)
 
     // Oliver: når order mapper hentOrdre er implementeret skal ordrerne hentes og sendes til templaten (ctx.attribute)
 
@@ -89,7 +89,7 @@ public class AdminController {
         ConnectionPool connectionPool = ConnectionPool.getInstance();
         int ordreId = Integer.parseInt(ctx.pathParam("ordreId"));
         String samletPris = ctx.formParam("pris");
-        String comment = ctx.formParam("comment");
+        String kommentar = ctx.formParam("comment");
 
         try {
             double pris = Double.parseDouble(samletPris);

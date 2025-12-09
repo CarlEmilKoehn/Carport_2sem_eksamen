@@ -18,6 +18,7 @@ public class Order {
     private RoofType roofType;
     private int widthMM;
     private int heightMM;
+    private int lengthMM;
     private Timestamp createdAt;
     private List<Material> materials;
     private List<Comment> comments;
