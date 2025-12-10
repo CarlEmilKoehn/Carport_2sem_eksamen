@@ -9,30 +9,23 @@ import org.junit.jupiter.api.*;
 
 public class AdminMapperTest {
 
-    private static ConnectionPool connectionPool;
     private static final String TEST_ADMIN_EMAIL = "admin@test.com";
     private static final String TEST_ADMIN_PASSWORD = "admintest123";
     private static final String TEST_ADMIN_FIRSTNAME = "Admin";
     private static final String TEST_ADMIN_LASTNAME = "Test";
 
-    @BeforeAll
-    static void initialiserConnectionPool() {
-        connectionPool = ConnectionPool.getInstance();
-    }
-
     @BeforeEach
     void oprydningFørTest() throws DatabaseException {
         try {
-            AdminMapper.deleteAdmin(TEST_ADMIN_EMAIL, connectionPool);
+            AdminMapper.deleteAdmin(TEST_ADMIN_EMAIL);
         } catch (DatabaseException e) {
-
         }
     }
 
     @AfterEach
     void sletTestAdmin() throws DatabaseException {
         try {
-            AdminMapper.deleteAdmin(TEST_ADMIN_EMAIL, connectionPool);
+            AdminMapper.deleteAdmin(TEST_ADMIN_EMAIL);
         } catch (DatabaseException e) {
 
         }
@@ -43,9 +36,9 @@ public class AdminMapperTest {
     void testOpretAdmin() throws DatabaseException {
 
         Admin admin = new Admin(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD, TEST_ADMIN_FIRSTNAME, TEST_ADMIN_LASTNAME);
-        AdminMapper.createAdmin(admin, connectionPool);
+        AdminMapper.createAdmin(admin);
 
-        Admin hentetAdmin = AdminMapper.getAdminByEmail(TEST_ADMIN_EMAIL, connectionPool);
+        Admin hentetAdmin = AdminMapper.getAdminByEmail(TEST_ADMIN_EMAIL);
         assertNotNull(hentetAdmin);
 
         assertEquals(TEST_ADMIN_EMAIL, hentetAdmin.getAdminEmail());
@@ -58,9 +51,9 @@ public class AdminMapperTest {
     void testLoginSuccess() throws DatabaseException {
 
         Admin admin = new Admin(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD, TEST_ADMIN_FIRSTNAME, TEST_ADMIN_LASTNAME);
-        AdminMapper.createAdmin(admin, connectionPool);
+        AdminMapper.createAdmin(admin);
 
-        Admin loggedInAdmin = AdminMapper.login(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD, connectionPool);
+        Admin loggedInAdmin = AdminMapper.login(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD);
 
         assertNotNull(loggedInAdmin);
         assertEquals(TEST_ADMIN_EMAIL, loggedInAdmin.getAdminEmail());
@@ -73,10 +66,10 @@ public class AdminMapperTest {
     @DisplayName("Test login med ugyldigt password")
     void testLoginFejl() throws DatabaseException {
         Admin admin = new Admin(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD, TEST_ADMIN_FIRSTNAME, TEST_ADMIN_LASTNAME);
-        AdminMapper.createAdmin(admin, connectionPool);
+        AdminMapper.createAdmin(admin);
 
         assertThrows(DatabaseException.class, () -> {
-            AdminMapper.login(TEST_ADMIN_EMAIL, "Forkert adgangskode", connectionPool);
+            AdminMapper.login(TEST_ADMIN_EMAIL, "Forkert adgangskode");
         });
     }
     @Test
@@ -84,9 +77,9 @@ public class AdminMapperTest {
     void testHentAlleAdmins() throws DatabaseException {
 
         Admin admin1 = new Admin(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD, TEST_ADMIN_FIRSTNAME, TEST_ADMIN_LASTNAME);
-        AdminMapper.createAdmin(admin1, connectionPool);
+        AdminMapper.createAdmin(admin1);
 
-        List<Admin> admins = AdminMapper.getAllAdmins(connectionPool);
+        List<Admin> admins = AdminMapper.getAllAdmins();
 
         assertFalse(admins.isEmpty());
 
@@ -104,14 +97,14 @@ public class AdminMapperTest {
     void testUpdateAdmin() throws DatabaseException {
 
         Admin admin = new Admin(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD, TEST_ADMIN_FIRSTNAME, TEST_ADMIN_LASTNAME);
-        AdminMapper.createAdmin(admin, connectionPool);
+        AdminMapper.createAdmin(admin);
 
       admin.setAdminPassword("nytPassword123");
       admin.setAdminFirstname("Nyt");
       admin.setAdminLastname("Navn");
-      AdminMapper.updateAdmin(admin, connectionPool);
+      AdminMapper.updateAdmin(admin);
 
-      Admin opdateretAdmin = AdminMapper.getAdminByEmail(TEST_ADMIN_EMAIL, connectionPool);
+      Admin opdateretAdmin = AdminMapper.getAdminByEmail(TEST_ADMIN_EMAIL);
       assertEquals("Nyt", opdateretAdmin.getAdminFirstname());
       assertEquals("Navn", opdateretAdmin.getAdminLastname());
 }
@@ -121,11 +114,11 @@ public class AdminMapperTest {
 void testSletAdmin() throws DatabaseException {
 
     Admin admin = new Admin(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD, TEST_ADMIN_FIRSTNAME, TEST_ADMIN_LASTNAME);
-    AdminMapper.createAdmin(admin, connectionPool);
-    AdminMapper.deleteAdmin(TEST_ADMIN_EMAIL, connectionPool);
+    AdminMapper.createAdmin(admin);
+    AdminMapper.deleteAdmin(TEST_ADMIN_EMAIL);
 
     assertThrows(DatabaseException.class, () -> {
-        AdminMapper.getAdminByEmail(TEST_ADMIN_EMAIL, connectionPool);
+        AdminMapper.getAdminByEmail(TEST_ADMIN_EMAIL);
     });
 }
 
@@ -133,8 +126,8 @@ void testSletAdmin() throws DatabaseException {
 @DisplayName("Admin findes ikke.")
 void testGetAdminMedUgyldigEmail() {
     assertThrows(DatabaseException.class, () -> {
-        AdminMapper.getAdminByEmail("Ugyldig email", connectionPool);
+        AdminMapper.getAdminByEmail("Ugyldig email");
     });
-}
+    }
 }
 
