@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html"
-      xmlns="http://www.w3.org/1999/html">
+<html lang="da" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,111 +7,71 @@
     <link rel="stylesheet" th:href="@{/css/admin_styles.css}">
 </head>
 <body>
+
 <header class="admin-header">
     <div class="header-content">
-        <h1> FOG Carport - Admin Dashboard</h1>
+        <h1>FOG Carport - Admin Dashboard</h1>
         <div class="admin-info">
-            <span> Logget ind som: <strong th:text="${session.adminName}">Admin</strong></span>
+            <span>Logget ind som: <strong th:text="${session.currentAdmin.adminFirstname}"></strong></span>
             <a th:href="@{/admin/logout}" class="logout-btn">Log ud</a>
         </div>
     </div>
 </header>
 
 <main class="dashboard-container">
-    <section class="search-section">
-        <form th:action="@{/admin/dashboard}" method="get" class="search-form">
-            <input
-                type="text"
-                name="search"
-                placeholder="Søg"
-                th:value="${searchQuery}"
-                class="search-input">
-            <button type="submit" class="search-btn">Søg</button>
-         <a th:href="@{/admin/dashboard}" class="clear-search-btn" th:if="${searchQuery}">Ryd søgning</a>
-            </form>
-            </section>
     <section class="filter-section">
         <div class="filter-buttons">
-            <a th:href="@{/admin/dashboard}"
-               class="filter-btn"
-               th:classappend="${statusFilter == null or statusFilter == ''} ? 'active' : ''">
-                Alle ordrer
-            </a>
-
-            <a th:href="@{/admin/dashboard(status = 'pending')}"
-               class="filter-btn pending"
-               th:classappend="${statusFilter == 'pending'} ? 'active' : ''">
-                Pending
-            </a>
-            <a th:href="@{/admin/dashboard(status = 'accepted')}"
-               class="filter-btn accepted"
-               th:classappend="${statusFilter == 'accepted'} ? 'active' : ''">
-                Accepted
-            </a>
-            <a th:href="@{/admin/dashboard(status = 'rejected')}"
-               class="filter-btn rejected"
-               th:classappend="${statusFilter == 'rejected'} ? 'active' : ''">
-                Rejected
-                </a>
+            <a th:href="@{/admin/dashboard}" class="filter-btn">Alle ordrer</a>
+            <a th:href="@{/admin/dashboard(status='pending')}" class="filter-btn pending">Pending</a>
+            <a th:href="@{/admin/dashboard(status='accepted')}" class="filter-btn accepted">Accepted</a>
+            <a th:href="@{/admin/dashboard(status='rejected')}" class="filter-btn rejected">Rejected</a>
         </div>
     </section>
 
     <section class="orders-section">
-        <div class="table-info">
-            <p th:text="${orders.size()} + ' ordrer fundet'">0 ordrer fundet </p>
-        </div>
         <div class="orders-table-container">
-        <table class="orders-table">
-            <thead>
-            <tr>
-                <th>Ordre ID</th>
-                <th>Kunde</th>
-                <th>Email</th>
-                <th>Carport mål</th>
-                <th>Skur</th>
-                <th>Tag type</th>
-                <th>Status</th>
-                <th>Dato</th>
-                <th>Handlinger</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="order : ${orders}">
-                <td th:text="${order.userOrderId}">#001</td>
-                <td th:text="${order.userFirstname} + ' ' + ${order.userLastname}">Test van Slyck</td>
-                <td th:text="${order.userEmail}">test@email.dk</td>
-                <td th:text="${order.lengthMm} + ' x ' + ${order.widthMm} + ' mm'">3600 x 2400 mm</td>
-                <td>
-                    <span th:if="${order.shedId != null}" class="has-shed">Ja</span>
-                    <span th:if="${order.shedId == null}" class="no-shed">Nej</span>
-                </td>
-            <td th:text="${order.roofTypeName}">Plastmo Trapez
-            </td>
-            <td>
-                <span class="status-badge"
-                      th:classappend="${order.orderStatus}"
-                      th:text="${order.orderStatus}">
-                    Pending
-                </span>
-            </td>
-
-            <td th:text="${#temporals.format(order.createdAt, 'dd.MM.yyyy HH:mm')}">15-11-2024 12:00</td>
-                <td>
-                <a th:href="@{/admin/order/{id}(id=${order.userOrderId})}"
-                        class="edit-btn">
-                Rediger
-            </a>
-            </td>
-            </tr>
-            </tbody>
+            <table class="orders-table">
+                <thead>
+                <tr>
+                    <th>Ordre ID</th>
+                    <th>Email</th>
+                    <th>Carport mål</th>
+                    <th>Skur</th>
+                    <th>Tag type</th>
+                    <th>Pris</th>
+                    <th>Status</th>
+                    <th>Dato</th>
+                    <th>Handlinger</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="order : ${allOrders}">
+                    <td th:text="'#' + ${order.id}"></td>
+                    <td th:text="${order.email}"></td>
+                    <td th:text="${order.lengthMM} + ' x ' + ${order.widthMM} + ' mm'"></td>
+                    <td>
+                        <span th:if="${order.class.simpleName == 'OrderWithShed'}" class="has-shed">Ja</span>
+                        <span th:unless="${order.class.simpleName == 'OrderWithShed'}" class="no-shed">Nej</span>
+                    </td>
+                    <td th:text="${order.roofType.name}"></td>
+                    <td th:text="${order.totalPrice} + ' kr'"></td>
+                    <td>
+                        <span class="status-badge" th:classappend="${order.status}" th:text="${order.status}"></span>
+                    </td>
+                    <td th:text="${#temporals.format(order.createdAt, 'dd-MM-yyyy HH:mm')}"></td>
+                    <td>
+                        <a th:href="@{/admin/ordre/{id}(id=${order.id})}" class="view-btn">Vis</a>
+                    </td>
+                </tr>
+                </tbody>
             </table>
 
-            <div th:if="${orders.isEmpty()}"
-                 class="empty-state">
+            <div th:if="${allOrders.isEmpty()}" class="empty-state">
                 <p>Ingen ordrer fundet</p>
             </div>
         </div>
-        </section>
+    </section>
 </main>
+
 </body>
 </html>
