@@ -46,4 +46,17 @@ public class Material {
         this.unitName = unitName;
         this.unitShortName = unitShortName;
     }
+
+    @Override
+    public String toString() {
+        return "Material{" +
+                "quantity=" + quantity +
+                ", totalPrice=" + totalPrice +
+                ", note='" + note + '\'' +
+                ", productName='" + productName + '\'' +
+                ", productDescription='" + productDescription + '\'' +
+                ", lengthMM=" + lengthMM +
+                ", unitName='" + unitName + '\'' +
+                '}';
+    }
 }

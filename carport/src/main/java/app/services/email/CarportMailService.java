@@ -1,5 +1,6 @@
 package app.services.email;
 
+import app.entities.Material;
 import app.entities.Order;
 import jakarta.mail.internet.MimeBodyPart;
 
@@ -19,8 +20,7 @@ public class CarportMailService {
     public void sendOrderReceived(Order order, String svgMarkup) throws Exception {
         String body = templates.buildOrderReceivedText(order);
 
-        MimeBodyPart svgAttachment =
-                mailSender.createAttachment("carport.svg", "image/svg+xml",
+        MimeBodyPart svgAttachment = mailSender.createAttachment("carport.svg", "image/svg+xml",
                         svgMarkup.getBytes(StandardCharsets.UTF_8));
 
         mailSender.sendEmail(
@@ -44,15 +44,26 @@ public class CarportMailService {
     public void sendOrderPaid(Order order, String svgMarkup) throws Exception {
         String body = templates.buildOrderPaidText(order);
 
-        MimeBodyPart svgAttachment =
-                mailSender.createAttachment("carport.svg", "image/svg+xml",
-                        svgMarkup.getBytes(StandardCharsets.UTF_8));
+        MimeBodyPart svgAttachment = mailSender.createAttachment("carport.svg", "image/svg+xml", svgMarkup.getBytes(StandardCharsets.UTF_8));
+        StringBuilder materialListBuilder = new StringBuilder();
+        materialListBuilder.append("Styklisten for din ordre:\n\n");
+
+        for (Material m : order.getMaterials()) {
+            materialListBuilder.append(m.toString())
+                               .append(System.lineSeparator());
+        }
+
+        MimeBodyPart materialListAttachment = mailSender.createAttachment(
+                "stykliste.txt",
+                "text/plain",
+                materialListBuilder.toString().getBytes(StandardCharsets.UTF_8)
+        );
 
         mailSender.sendEmail(
                 order.getEmail(),
-                "Kvittering for dit køb – ordre #" + order.getId(),
+                "Kvittering for dit køb - ordre #" + order.getId(),
                 body,
-                List.of(svgAttachment)
+                List.of(svgAttachment, materialListAttachment)
         );
     }
 }
