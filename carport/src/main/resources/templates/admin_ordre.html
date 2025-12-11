@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="da" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordre Detaljer - FOG Carport</title>
+    <link rel="stylesheet" th:href="@{/css/admin_styles.css}">
+</head>
+<body>
+
+<header class="admin-header">
+    <div class="header-content">
+        <h1>FOG Carport - Ordre Detaljer</h1>
+        <div class="admin-info">
+            <span>Logget ind som: <strong th:text="${session.currentAdmin.adminFirstname}"></strong></span>
+            <a th:href="@{/admin/logout}" class="logout-btn">Log ud</a>
+        </div>
+    </div>
+</header>
+
+<main class="order-details-container">
+
+    <div class="back-navigation">
+        <a th:href="@{/admin/dashboard}" class="back-btn">← Tilbage til dashboard</a>
+    </div>
+
+    <div class="order-header">
+        <h2>Ordre <span th:text="'#' + ${order.id}"></span></h2>
+        <span class="status-badge large"
+              th:classappend="${order.status}"
+              th:text="${order.status}">
+        </span>
+    </div>
+
+    <section class="details-section">
+        <h3>Kunde Information</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Email:</span>
+                <span class="info-value" th:text="${order.email}"></span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Ordre oprettet:</span>
+                <span class="info-value" th:text="${#temporals.format(order.createdAt, 'dd-MM-yyyy HH:mm')}"></span>
+            </div>
+        </div>
+    </section>
+
+    <section class="details-section">
+        <h3>Carport Specifikationer</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Længde:</span>
+                <span class="info-value" th:text="${order.lengthMM + ' mm'}"></span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Bredde:</span>
+                <span class="info-value" th:text="${order.widthMM + ' mm'}"></span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Højde:</span>
+                <span class="info-value" th:text="${order.heightMM + ' mm'}"></span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Tag type:</span>
+                <span class="info-value" th:text="${order.roofType.name}"></span>
+            </div>
+            <div class="info-item" th:if="${order.class.simpleName == 'OrderWithShed'}">
+                <span class="info-label">Skur:</span>
+                <span class="info-value" th:text="${order.shed.widthMM + ' x ' + order.shed.lengthMM + ' mm'}"></span>
+            </div>
+            <div class="info-item" th:unless="${order.class.simpleName == 'OrderWithShed'}">
+                <span class="info-label">Skur:</span>
+                <span class="info-value">Ingen skur</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="details-section">
+        <h3>Materialeliste</h3>
+        <div class="materials-table-container">
+            <table class="materials-table">
+                <thead>
+                <tr>
+                    <th>Materiale</th>
+                    <th>Beskrivelse</th>
+                    <th>Antal</th>
+                    <th>Styk pris</th>
+                    <th>Total</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="material : ${orderMaterials}">
+                    <td th:text="${material.productName}"></td>
+                    <td th:text="${material.productDescription}"></td>
+                    <td th:text="${material.quantity}"></td>
+                    <td th:text="${material.unitPrice + ' kr'}"></td>
+                    <td th:text="${material.totalPrice + ' kr'}"></td>
+                </tr>
+                </tbody>
+                <tfoot>
+                <tr class="total-row">
+                    <td colspan="4">Pris i alt:</td>
+                    <td><strong th:text="${calculatedPrice + ' kr'}"></strong></td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    </section>
+
+    <section class="details-section admin-actions">
+        <h3>Admin Handlinger</h3>
+
+        <form th:action="@{/admin/ordre/{id}(id=${order.id})}" method="post" class="admin-form">
+
+            <div class="form-group">
+                <label for="adminNote">Kommentar til ordre:</label>
+                <textarea
+                        id="adminNote"
+                        name="adminNote"
+                        rows="4"
+                        placeholder="Tilføj evt. note til ordren..."
+                        th:text="${existingNote}"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="adjustedPrice">Justeret pris:</label>
+                <input
+                        type="number"
+                        id="adjustedPrice"
+                        name="adjustedPrice"
+                        step="0.01"
+                        placeholder="Hvis prisen skal justeres..."
+                        th:value="${adjustedPrice}">
+                <small class="form-hint">Hvis der ikke er en justering i pris skal feltet stå tomt</small>
+            </div>
+
+            <div class="action-buttons">
+                <button
+                        type="submit"
+                        name="action"
+                        value="accept"
+                        class="action-btn accept-btn"
+                        th:disabled="${order.status == 'accepted' or order.status == 'rejected'}">
+                    Accepter ordre
+                </button>
+                <button
+                        type="submit"
+                        name="action"
+                        value="reject"
+                        class="action-btn reject-btn"
+                        th:disabled="${order.status == 'accepted' or order.status == 'rejected'}">
+                    Afvis ordre
+                </button>
+            </div>
+        </form>
+    </section>
+</main>
+
+</body>
+</html>
