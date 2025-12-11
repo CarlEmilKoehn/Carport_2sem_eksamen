@@ -1,6 +1,5 @@
 package app.services.email;
 
-import app.config.ThymeleafConfig;
 import jakarta.activation.DataHandler;
 import jakarta.activation.DataSource;
 import jakarta.mail.*;
@@ -9,7 +8,6 @@ import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
 import jakarta.mail.util.ByteArrayDataSource;
-import org.thymeleaf.TemplateEngine;
 
 import java.util.List;
 import java.util.Properties;
