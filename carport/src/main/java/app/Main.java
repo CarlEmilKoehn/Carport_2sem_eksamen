@@ -26,6 +26,7 @@ public class Main {
 
         app.get("/", ctx -> ctx.render("homepage.html"));
         app.get("/customMadeCarport", ctx -> ctx.render("customMadeCarport.html"));
+        app.get("/carportFlatRoof", ctx -> ctx.render("carportFlatRoof.html"));
 
         CustomerController.addRoutes(app);
         OrderController.addRoutes(app);
