@@ -49,7 +49,6 @@ public class Svg {
 
     }
 
-
     public void addArrow(int x1, int y1, int x2, int y2, String style){
 
         svg.append(String.format(svgArrowTemplate, x1, y1, x2, y2, style));

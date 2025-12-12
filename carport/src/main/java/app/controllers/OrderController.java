@@ -16,11 +16,18 @@ import java.util.Locale;
 public class OrderController {
 
     public static void addRoutes(Javalin app) {
+        app.get("/showOrder", ctx -> showSvg(ctx));
+
+    }
+
+    private static void showSvg(Context ctx) {
         Locale.setDefault(new Locale("US"));
-        CarportSvg svg = new CarportSvg(780, 600);
+        //TODO: ændre navne til de passer html
+        int width = Integer.parseInt(ctx.formParam("bredde"));
+        int length = Integer.parseInt(ctx.formParam("længde"));
+        CarportSvg svg = new CarportSvg(780, 600, 0, 0);
 
         ctx.attribute("svg", svg.toString());
         ctx.render("showOrder.html");
     }
-
 }

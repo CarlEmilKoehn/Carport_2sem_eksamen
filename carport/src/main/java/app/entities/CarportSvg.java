@@ -1,13 +1,17 @@
 package app.entities;
 
 public class CarportSvg {
-    private int width;
-    private int height;
+    private int widthCarport;
+    private int lengthCarport;
+    private int widthShed;
+    private int lengthShed;
     private Svg carportSvg;
 
-    public CarportSvg(int width, int height) {
-        this.width = width;
-        this.height = height;
+    public CarportSvg(int widthCarport, int lengthCarport, int widthShed, int lengthShed) {
+        this.widthCarport = widthCarport;
+        this.lengthCarport = lengthCarport;
+        this.widthShed = widthShed;
+        this.lengthShed = lengthShed;
         carportSvg = new Svg(0, 0, "0 0 855 690", "50%");
         carportSvg.addRectangle(0, 0, 600, 780, "style=\"stroke:#000000; fill: #ffffff\"");
         addBeams();
