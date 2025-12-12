@@ -19,7 +19,7 @@ public class OrderController {
 
     public static void guardAgainstOrderEqualsNull(Order order) {
         if (order == null) {
-            return;
+            throw new IllegalStateException("Order is null");
         }
     }
 
