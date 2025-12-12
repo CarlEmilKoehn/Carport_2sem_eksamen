@@ -17,15 +17,18 @@ import java.util.Objects;
 
 public class OrderController {
 
+    public static void guardAgainstOrderEqualsNull(Order order) {
+        if (order == null) {
+            return;
+        }
+    }
+
     public static void addRoutes(Javalin app) {
 
         app.post("submitRequestForCarport", ctx -> {
 
             Order order = handleCreateOrder(ctx);
-
-            if (order == null) {
-                return;
-            }
+            guardAgainstOrderEqualsNull(order);
 
             boolean mailOK = handleRequestCarportEmail(order);
 
@@ -36,13 +39,12 @@ public class OrderController {
             }
         });
 
+        //TODO
         app.post("submitPricingForOrder", ctx -> {
 
             Order order = ctx.attribute("order");
 
-            if (order == null) {
-                return;
-            }
+            guardAgainstOrderEqualsNull(order);
 
             boolean mailOK = handlePricingCarportEmail(order);
 
@@ -53,13 +55,12 @@ public class OrderController {
             }
         });
 
+        //TODO
         app.post("submitPaymentForCarport", ctx -> {
 
             Order order = ctx.attribute("payingForOrder");
 
-            if (order == null) {
-                return;
-            }
+            guardAgainstOrderEqualsNull(order);
 
             boolean mailOK = handlePaymentCarportEmail(order);
 
