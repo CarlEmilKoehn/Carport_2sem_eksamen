@@ -43,17 +43,19 @@
 
             <h2>Carport med fladt tag</h2>
 
-            <form action="/carport/fladt-tag" method="post" class="carportForm">
+            <form action="/carportFlatRoof" method="post" class="carportForm">
 
                 <label>Carport bredde *</label>
                 <select name="carportWidthMm" required>
                     <option value="">Vælg bredde</option>
                 </select>
 
+
                 <label>Carport længde *</label>
                 <select name="carportLengthMm" required>
                     <option value="">Vælg længde</option>
                 </select>
+
 
                 <input type="hidden" name="carportHeightMm" value="2200">
 
@@ -66,14 +68,16 @@
                 <p>NB! Der skal beregnes 15 cm tagudhæng på hver side af redskabsrummet*</p>
 
                 <label>Redskabsrum bredde *</label>
-                <select name="shedWidthMm" required>
+                <select name="shedWidthMm">
                     <option value="">Uden redskabsrum</option>
                 </select>
 
+
                 <label>Redskabsrum længde *</label>
-                <select name="shedLengthMm" required>
+                <select name="shedLengthMm">
                     <option value="">Uden redskabsrum</option>
                 </select>
+
 
                 <hr>
 
@@ -108,6 +112,7 @@
         </article>
     </main>
 </section>
+
 
 <footer>
     <nav class="footerNav">

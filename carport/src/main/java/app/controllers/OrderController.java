@@ -12,22 +12,35 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Locale;
 
-
 public class OrderController {
 
     public static void addRoutes(Javalin app) {
-        app.get("/showOrder", ctx -> showSvg(ctx));
 
+        app.post("/carportFlatRoof", OrderController::showSvg);
     }
 
     private static void showSvg(Context ctx) {
-        Locale.setDefault(new Locale("US"));
-        //TODO: ændre navne til de passer html
-        int width = Integer.parseInt(ctx.formParam("bredde"));
-        int length = Integer.parseInt(ctx.formParam("længde"));
-        CarportSvg svg = new CarportSvg(780, 600, 0, 0);
+        Locale.setDefault(Locale.US);
+
+        int carportWidth = Integer.parseInt(ctx.formParam("carportWidthMm"));
+        int carportLength = Integer.parseInt(ctx.formParam("carportLengthMm"));
+
+        int shedWidth = ctx.formParam("shedWidthMm").isEmpty()
+                ? 0
+                : Integer.parseInt(ctx.formParam("shedWidthMm"));
+
+        int shedLength = ctx.formParam("shedLengthMm").isEmpty()
+                ? 0
+                : Integer.parseInt(ctx.formParam("shedLengthMm"));
+
+        CarportSvg svg = new CarportSvg(
+                carportWidth,
+                carportLength,
+                shedWidth,
+                shedLength
+        );
 
         ctx.attribute("svg", svg.toString());
-        ctx.render("showOrder.html");
+        ctx.render("carportFlatRoof.html");
     }
 }
