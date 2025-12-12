@@ -7,7 +7,7 @@
     <title>Fog - Holder i længden</title>
 
     <link rel="icon" type="image/x-icon" th:href="@{/images/favicon.ico}">
-    <link rel="stylesheet" th:href="@{/css/customMadeCarport.css}">
+    <link rel="stylesheet" th:href="@{/css/carportFlatRoof.css}">
 </head>
 
 <body>
@@ -28,7 +28,7 @@
                rel="noopener">
                 Standard Carport
             </a>
-            <a href="#"
+            <a th:href="@{/customMadeCarport}"
                class="headerButton"
                target="_self">
                 Skræddersyet Carport
@@ -36,28 +36,75 @@
         </nav>
     </div>
 </header>
+
 <section class="cardsSection">
     <main class="cards">
         <article class="card">
-            <h3> Carport med fladt tag</h3>
-            <img th:src="@{/images/flatRoofLogo.png}"
-                 alt="Carport med fladt tag">
-            <a th:href="@{/carportFlatRoof}"
-               class="cardButton"
-               target="_self">
-                Bestil tilbud
-            </a>
-        </article>
 
-        <article class="card">
-            <h3> Carport med høj rejsning</h3>
-            <img th:src="@{/images/highRiseLogo.png}"
-                 alt="Carport med høj rejsning">
-            <a th:href="@{/customMadeCarport}"
-               class="cardButton"
-               target="_self">
-                Bestil tilbud
-            </a>
+            <h2>Carport med fladt tag</h2>
+
+            <form action="/carport/fladt-tag" method="post" class="carportForm">
+
+                <label>Carport bredde *</label>
+                <select name="carportWidthMm" required>
+                    <option value="">Vælg bredde</option>
+                </select>
+
+                <label>Carport længde *</label>
+                <select name="carportLengthMm" required>
+                    <option value="">Vælg længde</option>
+                </select>
+
+                <input type="hidden" name="carportHeightMm" value="2200">
+
+                <label>Carport trapeztag *</label>
+                <select name="roofTypeId" required>
+                    <option value="">Vælg tag</option>
+                </select>
+
+                <h3>Redskabsrum</h3>
+                <p>NB! Der skal beregnes 15 cm tagudhæng på hver side af redskabsrummet*</p>
+
+                <label>Redskabsrum bredde *</label>
+                <select name="shedWidthMm" required>
+                    <option value="">Uden redskabsrum</option>
+                </select>
+
+                <label>Redskabsrum længde *</label>
+                <select name="shedLengthMm" required>
+                    <option value="">Uden redskabsrum</option>
+                </select>
+
+                <hr>
+
+                <h3>Kontaktoplysninger</h3>
+
+                <label>Fornavn *</label>
+                <input type="text" name="firstName" required>
+
+                <label>Efternavn *</label>
+                <input type="text" name="lastName" required>
+
+                <label>Adresse *</label>
+                <input type="text" name="address" required>
+
+                <label>Postnummer *</label>
+                <input type="text" name="postalCode" required>
+
+                <label>Email *</label>
+                <input type="email" name="email" required>
+
+                <label class="consent">
+                    <input type="checkbox" required>
+                    Jeg accepterer at Fog må kontakte mig vedr. tilbud
+                </label>
+
+                <button type="submit" class="submitButton">
+                    Bestil tilbud
+                </button>
+
+            </form>
+
         </article>
     </main>
 </section>
@@ -187,7 +234,6 @@
         <div class="footerColumn">
             <a href="#top" class="mainFooterButton"
                onclick="scrollToTop(); return false;">
-
                 Med omtanke </a>
 
             <a href="https://www.johannesfog.dk/om-fog/csr"
@@ -205,9 +251,8 @@
             <a href="https://www.johannesfog.dk/om-fog/whistleblowerpolitik"
                class="footerButton" target="_blank" rel="noopener">
                 Whistleblowerpolitik </a>
-
-
         </div>
+
         <div class="footerBrand">
             <a href="#"
                onclick="scrollToTop(); return false;">
@@ -227,11 +272,11 @@
     </nav>
 </footer>
 
-</body>
-</html>
-
 <script>
     function scrollToTop() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 </script>
+
+</body>
+</html>

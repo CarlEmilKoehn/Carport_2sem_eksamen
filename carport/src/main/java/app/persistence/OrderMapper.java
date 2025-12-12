@@ -3,6 +3,7 @@ package app.persistence;
 import app.entities.*;
 import app.exceptions.DatabaseException;
 
+import javax.xml.crypto.Data;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
@@ -91,6 +92,61 @@ public class OrderMapper {
                 throw e;
             } finally {
                 connection.setAutoCommit(true);
+            }
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+        }
+    }
+
+    public static Order getOrderByOrderId(int orderId) throws DatabaseException {
+
+        String sql = "SELECT " +
+                "uo.user_order_id, uo.user_email, uo.order_status, uo.width_mm, uo.height_mm, uo.length_mm, uo.order_price, uo.created_at, " +
+                "rt.roof_type_id, rt.roof_type_name, rt.roof_type_deg, rt.roof_type_price, " +
+                "s.shed_id, s.shed_width_mm, s.shed_length_mm " +
+                "FROM public.user_order uo " +
+                "JOIN roof_type rt ON uo.roof_type_id = rt.roof_type_id " +
+                "LEFT JOIN shed s ON uo.shed_id = s.shed_id" +
+                "WHERE uo.order_id = ?";
+
+        try(Connection connection = ConnectionPool.getInstance().getConnection()) {
+            PreparedStatement ps = connection.prepareStatement(sql);
+
+            ps.setInt(1, orderId);
+
+            try(ResultSet rs = ps.executeQuery()) {
+
+                String email = rs.getString("user_email");
+                String status = rs.getString("order_status");
+
+                RoofType roofType = new RoofType(
+                        rs.getInt("roof_type_id"),
+                        rs.getString("roof_type_name"),
+                        rs.getInt("roof_type_deg"),
+                        rs.getBigDecimal("roof_type_price")
+                );
+
+                int widthMM = rs.getInt("width_mm");
+                int heightMM = rs.getInt("height_mm");
+                int lengthMM = rs.getInt("length_mm");
+                Timestamp createdAt = rs.getTimestamp("created_at");
+                BigDecimal totalPrice = rs.getBigDecimal("order_price");
+
+                List<Material> materials = MaterialMapper.getAllMaterialsFromOrder(orderId);
+                List<Comment> comments = getAllCommentsFromOrder(orderId);
+
+                Shed shed = new Shed(
+                        rs.getInt("shed_id"),
+                        rs.getInt("shed_width_mm"),
+                        rs.getInt("shed_length_mm")
+                );
+
+                if (shed.getId() == 0 || shed.getWidthMM() == 0 || shed.getLengthMM() == 0) {
+                    return new Order(orderId, email, status, roofType, widthMM, heightMM, lengthMM, createdAt, materials, comments, totalPrice);
+                } else {
+                    return new OrderWithShed(orderId, email, status, roofType, widthMM, heightMM, lengthMM, createdAt, materials, comments, totalPrice, shed);
+                }
             }
 
         } catch (SQLException e) {
