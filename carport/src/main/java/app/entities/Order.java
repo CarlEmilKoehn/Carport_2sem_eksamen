@@ -24,4 +24,15 @@ public class Order {
     private List<Comment> comments;
     private BigDecimal totalPrice;
 
+    public Order(String email, String status, RoofType roofType, int widthMM, int heightMM, int lengthMM, List<Material> materials, List<Comment> comments, BigDecimal totalPrice) {
+        this.email = email;
+        this.status = status;
+        this.roofType = roofType;
+        this.widthMM = widthMM;
+        this.heightMM = heightMM;
+        this.lengthMM = lengthMM;
+        this.materials = materials;
+        this.comments = comments;
+        this.totalPrice = totalPrice;
+    }
 }

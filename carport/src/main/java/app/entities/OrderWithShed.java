@@ -19,4 +19,10 @@ public class OrderWithShed extends Order{
 
         this.shed = shed;
     }
+
+    public OrderWithShed(String email, String status, RoofType roofType, int widthMM, int heightMM, int lengthMM, List<Material> materials, List<Comment> comments, BigDecimal totalPrice, Shed shed) {
+        super(email, status, roofType, widthMM, heightMM, lengthMM, materials, comments, totalPrice);
+
+        this.shed = shed;
+    }
 }

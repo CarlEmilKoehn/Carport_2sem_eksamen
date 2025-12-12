@@ -2,6 +2,7 @@ package app.persistence;
 
 import app.entities.*;
 import app.exceptions.DatabaseException;
+import com.zaxxer.hikari.pool.HikariProxyResultSet;
 
 import javax.xml.crypto.Data;
 import java.math.BigDecimal;
@@ -299,6 +300,35 @@ public class OrderMapper {
             }
 
             return comments;
+        } catch (SQLException e) {
+            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+        }
+    }
+
+    public static RoofType getRoofTypeBySlopeDegrees(Integer roofDeg) throws DatabaseException{
+
+        String sql = "SELECT roof_type_id, roof_type_name, roof_type_deg, roof_type_price FROM public.roof_type WHERE roof_type_deg = ?";
+
+        try(Connection connection = ConnectionPool.getInstance().getConnection()) {
+            PreparedStatement ps = connection.prepareStatement(sql);
+
+            ps.setInt(1, roofDeg);
+
+            try(ResultSet rs = ps.executeQuery()) {
+
+                if (rs.next()) {
+
+                    return new RoofType(
+                            rs.getInt("roof_type_id"),
+                            rs.getString("roof_type_name"),
+                            rs.getInt("roof_type_deg"),
+                            rs.getBigDecimal("roof_type_price")
+                    );
+                }
+            }
+
+            throw new DatabaseException("No roofType with the slope = " + roofDeg);
+
         } catch (SQLException e) {
             throw new DatabaseException("Could not connect to DB: ", e.getMessage());
         }
