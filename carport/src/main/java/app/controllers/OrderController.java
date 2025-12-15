@@ -29,17 +29,14 @@ public class OrderController {
                 int orderId = OrderMapper.createOrder(order);
                 order.setId(orderId);
 
-                //boolean mailOK = sendOrderReceivedEmail(order);
+                boolean mailOK = sendOrderReceivedEmail(order);
 
-                /*
                 ctx.sessionAttribute(
                         mailOK ? "flashSuccess" : "flashError",
                         mailOK
                                 ? "Ordre oprettet og bekræftelse sendt."
                                 : "Ordre oprettet, men mail kunne ikke sendes."
                 );
-
-                    */
 
                 ctx.sessionAttribute("currentOrderId", orderId);
                 ctx.redirect("/");

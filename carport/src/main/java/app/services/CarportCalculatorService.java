@@ -1,9 +1,6 @@
 package app.services;
 
-import app.entities.Material;
-import app.entities.Order;
-import app.entities.OrderWithShed;
-import app.entities.Shed;
+import app.entities.*;
 import app.exceptions.DatabaseException;
 import app.persistence.MaterialMapper;
 
@@ -12,6 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CarportCalculatorService {
+
+    private static final int POST_HEIGHT_MM = 2200;
+    private static final int SHED_WALL_HEIGHT_MM = 2200;
 
     public static void calculate(Order order) throws DatabaseException {
 
@@ -22,7 +22,6 @@ public class CarportCalculatorService {
         addRafters(order, materials);
         addSterns(order, materials);
         addRoofSheets(order, materials);
-
         addShed(order, materials);
 
         BigDecimal materialsTotal = materials.stream()
@@ -33,266 +32,145 @@ public class CarportCalculatorService {
 
         order.setMaterials(materials);
         order.setTotalPrice(materialsTotal.add(slopePrice));
-
-    }
-
-    static private void addShed(Order order, List<Material> materials) throws DatabaseException {
-
-        if (!(order instanceof OrderWithShed ows)) {
-            return;
-        }
-        if (ows.getShed() == null) {
-            return;
-        }
-
-        Shed shed = ows.getShed();
-        int shedWidth  = shed.getWidthMM();
-        int shedLength = shed.getLengthMM();
-
-        int wallHeightMM = 2200;
-
-        int boardCoverWidthMM = 100;
-
-        int perimeterMM = 2 * (shedWidth + shedLength);
-
-        int boardsPerLayer = (int) Math.ceil(perimeterMM / (double) boardCoverWidthMM);
-
-        int totalBoards = boardsPerLayer * 2;
-
-        Material claddingBoard = MaterialMapper.findCladdingForHeight(wallHeightMM);
-
-        BigDecimal shedCladdingPrice =
-                claddingBoard.getUnitPrice().multiply(BigDecimal.valueOf(totalBoards));
-
-        materials.add(new Material(
-                0,
-                order.getId(),
-                claddingBoard.getProductId(),
-                totalBoards,
-                shedCladdingPrice,
-                "Beklædning til redskabsrum",
-                claddingBoard.getProductName(),
-                claddingBoard.getProductDescription(),
-                claddingBoard.getLengthMM(),
-                claddingBoard.getUnitName(),
-                claddingBoard.getUnitShortName(),
-                claddingBoard.getUnitPrice()
-        ));
-
-    }
-
-    private static int calculatePostsForLength(int lengthMM) {
-        int postsPerSide = (int) Math.ceil(lengthMM / 3000.0) + 1;
-        return postsPerSide * 2;
     }
 
     private static void addPosts(Order order, List<Material> materials) throws DatabaseException {
-        int totalPosts = calculatePostsForLength(order.getLengthMM());
-        int requiredLength = 2200;
 
-        Material basePost = MaterialMapper.findPostForLength(requiredLength);
+        int postsPerSide = (int) Math.ceil(order.getLengthMM() / 3000.0) + 1;
+        int totalPosts = postsPerSide * 2;
 
-        BigDecimal linePrice = basePost.getUnitPrice().multiply(BigDecimal.valueOf(totalPosts));
+        Material post = MaterialMapper.findPostForLength(POST_HEIGHT_MM);
+
+        BigDecimal price = post.getUnitPrice().multiply(BigDecimal.valueOf(totalPosts));
 
         materials.add(new Material(
                 0,
                 order.getId(),
-                basePost.getProductId(),
+                post.getProductId(),
                 totalPosts,
-                linePrice,
-                "Stolper til carport",
-                basePost.getProductName(),
-                basePost.getProductDescription(),
-                basePost.getLengthMM(),
-                basePost.getUnitName(),
-                basePost.getUnitShortName(),
-                basePost.getUnitPrice()
+                price,
+                "Stolper",
+                post.getProductName(),
+                post.getProductDescription(),
+                post.getLengthMM(),
+                post.getUnitName(),
+                post.getUnitShortName(),
+                post.getUnitPrice()
         ));
     }
 
     private static void addRems(Order order, List<Material> materials) throws DatabaseException {
 
-        int totalRems = 4;
+        Material rem = MaterialMapper.findRemForLength(order.getLengthMM());
+        int qty = 4;
 
-        int requiredLength = order.getLengthMM();
-
-        Material baseRem = MaterialMapper.findRemForLength(requiredLength);
-
-        BigDecimal remPrice = baseRem.getUnitPrice()
-                .multiply(BigDecimal.valueOf(totalRems));
-
+        BigDecimal price = rem.getUnitPrice().multiply(BigDecimal.valueOf(qty));
 
         materials.add(new Material(
-                0,
-                order.getId(),
-                baseRem.getProductId(),
-                totalRems,
-                remPrice,
-                "Ydre og inderrem",
-                baseRem.getProductName(),
-                baseRem.getProductDescription(),
-                baseRem.getLengthMM(),
-                baseRem.getUnitName(),
-                baseRem.getUnitShortName(),
-                baseRem.getUnitPrice()
+                0, order.getId(), rem.getProductId(), qty, price,
+                "Remme",
+                rem.getProductName(),
+                rem.getProductDescription(),
+                rem.getLengthMM(),
+                rem.getUnitName(),
+                rem.getUnitShortName(),
+                rem.getUnitPrice()
         ));
     }
 
     private static void addRafters(Order order, List<Material> materials) throws DatabaseException {
 
-        int totalRafters = calculateRaftersForLength(order.getLengthMM());
+        int qty = (int) Math.ceil(order.getLengthMM() / 555.0);
+        Material rafter = MaterialMapper.findRafterForLength(order.getWidthMM());
 
-        int requiredLength = order.getWidthMM();
-
-        Material baseRafter = MaterialMapper.findRafterForLength(requiredLength);
-
-        BigDecimal raftersPrice = baseRafter.getUnitPrice().multiply(BigDecimal.valueOf(totalRafters));
+        BigDecimal price = rafter.getUnitPrice().multiply(BigDecimal.valueOf(qty));
 
         materials.add(new Material(
-                0,
-                order.getId(),
-                baseRafter.getProductId(),
-                totalRafters,
-                raftersPrice,
+                0, order.getId(), rafter.getProductId(), qty, price,
                 "Spær",
-                baseRafter.getProductName(),
-                baseRafter.getProductDescription(),
-                baseRafter.getLengthMM(),
-                baseRafter.getUnitName(),
-                baseRafter.getUnitShortName(),
-                baseRafter.getUnitPrice()
+                rafter.getProductName(),
+                rafter.getProductDescription(),
+                rafter.getLengthMM(),
+                rafter.getUnitName(),
+                rafter.getUnitShortName(),
+                rafter.getUnitPrice()
         ));
-    }
-
-    private static int calculateRaftersForLength(int lengthMM) {
-        return (int) Math.ceil(lengthMM / 555.0);
     }
 
     private static void addSterns(Order order, List<Material> materials) throws DatabaseException {
 
-        int lengthMM = order.getLengthMM();
-        int widthMM  = order.getWidthMM();
+        Material underL = MaterialMapper.findUnderSternForLength(order.getLengthMM());
+        Material underW = MaterialMapper.findUnderSternForLength(order.getWidthMM());
+        Material overL  = MaterialMapper.findOverSternForLength(order.getLengthMM());
+        Material overW  = MaterialMapper.findOverSternForLength(order.getWidthMM());
 
-        int boardsOnLengthSides = 2;
-        int boardsOnWidthSides  = 2;
-
-        Material underLength = MaterialMapper.findUnderSternForLength(lengthMM);
-        Material underWidth  = MaterialMapper.findUnderSternForLength(widthMM);
-
-        int qtyUnderLength = boardsOnLengthSides;
-        int qtyUnderWidth  = boardsOnWidthSides;
-
-        BigDecimal underLengthPrice = underLength.getUnitPrice()
-                .multiply(BigDecimal.valueOf(qtyUnderLength));
-        BigDecimal underWidthPrice = underWidth.getUnitPrice()
-                .multiply(BigDecimal.valueOf(qtyUnderWidth));
-
-        materials.add(new Material(
-                0,
-                order.getId(),
-                underLength.getProductId(),
-                qtyUnderLength,
-                underLengthPrice,
-                "Understern på langsider",
-                underLength.getProductName(),
-                underLength.getProductDescription(),
-                underLength.getLengthMM(),
-                underLength.getUnitName(),
-                underLength.getUnitShortName(),
-                underLength.getUnitPrice()
-        ));
-
-        materials.add(new Material(
-                0,
-                order.getId(),
-                underWidth.getProductId(),
-                qtyUnderWidth,
-                underWidthPrice,
-                "Understern på for/bag",
-                underWidth.getProductName(),
-                underWidth.getProductDescription(),
-                underWidth.getLengthMM(),
-                underWidth.getUnitName(),
-                underWidth.getUnitShortName(),
-                underWidth.getUnitPrice()
-        ));
-
-        Material overLength = MaterialMapper.findOverSternForLength(lengthMM);
-        Material overWidth  = MaterialMapper.findOverSternForLength(widthMM);
-
-        int qtyOverLength = boardsOnLengthSides;
-        int qtyOverWidth  = boardsOnWidthSides;
-
-        BigDecimal overLengthPrice = overLength.getUnitPrice()
-                .multiply(BigDecimal.valueOf(qtyOverLength));
-        BigDecimal overWidthPrice = overWidth.getUnitPrice()
-                .multiply(BigDecimal.valueOf(qtyOverWidth));
-
-        materials.add(new Material(
-                0,
-                order.getId(),
-                overLength.getProductId(),
-                qtyOverLength,
-                overLengthPrice,
-                "Overstern på langsider",
-                overLength.getProductName(),
-                overLength.getProductDescription(),
-                overLength.getLengthMM(),
-                overLength.getUnitName(),
-                overLength.getUnitShortName(),
-                overLength.getUnitPrice()
-        ));
-
-        materials.add(new Material(
-                0,
-                order.getId(),
-                overWidth.getProductId(),
-                qtyOverWidth,
-                overWidthPrice,
-                "Overstern på for/bag",
-                overWidth.getProductName(),
-                overWidth.getProductDescription(),
-                overWidth.getLengthMM(),
-                overWidth.getUnitName(),
-                overWidth.getUnitShortName(),
-                overWidth.getUnitPrice()
-        ));
+        add(materials, order, underL, 2, "Understern langsider");
+        add(materials, order, underW, 2, "Understern for/bag");
+        add(materials, order, overL,  2, "Overstern langsider");
+        add(materials, order, overW,  2, "Overstern for/bag");
     }
-
 
     private static void addRoofSheets(Order order, List<Material> materials) throws DatabaseException {
 
-        int widthMM = order.getWidthMM();
-        int lengthMM = order.getLengthMM();
+        int sheetsAcross = (int) Math.ceil(order.getWidthMM() / 1000.0);
+        Material sheet = MaterialMapper.findRoofSheetForLength(order.getLengthMM());
 
-        int sheetsAcross = (int) Math.ceil(widthMM / 1000.0);
-
-        Material baseSheet = MaterialMapper.findRoofSheetForLength(lengthMM);
-
-        BigDecimal roofSheetPrice = baseSheet.getUnitPrice().multiply(BigDecimal.valueOf(sheetsAcross));
+        BigDecimal price = sheet.getUnitPrice().multiply(BigDecimal.valueOf(sheetsAcross));
 
         materials.add(new Material(
-                order.getId(),
-                baseSheet.getProductId(),
-                sheetsAcross,
-                roofSheetPrice,
+                0, order.getId(), sheet.getProductId(), sheetsAcross, price,
                 "Tagplader",
-                baseSheet.getProductName(),
-                baseSheet.getProductDescription(),
-                baseSheet.getLengthMM(),
-                baseSheet.getUnitName(),
-                baseSheet.getUnitShortName(),
-                baseSheet.getUnitPrice()
+                sheet.getProductName(),
+                sheet.getProductDescription(),
+                sheet.getLengthMM(),
+                sheet.getUnitName(),
+                sheet.getUnitShortName(),
+                sheet.getUnitPrice()
+        ));
+    }
+
+    private static void addShed(Order order, List<Material> materials) throws DatabaseException {
+
+        if (!(order instanceof OrderWithShed ows)) return;
+        Shed shed = ows.getShed();
+        if (shed == null) return;
+
+        int perimeter = 2 * (shed.getWidthMM() + shed.getLengthMM());
+        int boards = (int) Math.ceil(perimeter / 100.0) * 2;
+
+        Material board = MaterialMapper.findCladdingForHeight(SHED_WALL_HEIGHT_MM);
+
+        BigDecimal price = board.getUnitPrice().multiply(BigDecimal.valueOf(boards));
+
+        materials.add(new Material(
+                0, order.getId(), board.getProductId(), boards, price,
+                "Beklædning skur",
+                board.getProductName(),
+                board.getProductDescription(),
+                board.getLengthMM(),
+                board.getUnitName(),
+                board.getUnitShortName(),
+                board.getUnitPrice()
+        ));
+    }
+
+    private static void add(List<Material> list, Order order, Material m, int qty, String note) {
+        list.add(new Material(
+                0, order.getId(), m.getProductId(),
+                qty,
+                m.getUnitPrice().multiply(BigDecimal.valueOf(qty)),
+                note,
+                m.getProductName(),
+                m.getProductDescription(),
+                m.getLengthMM(),
+                m.getUnitName(),
+                m.getUnitShortName(),
+                m.getUnitPrice()
         ));
     }
 
     private static BigDecimal calculateSlopePrice(Order order) {
-
-        if (order.getRoofType() == null) {
-            return BigDecimal.ZERO;
-        }
-
-        return BigDecimal.valueOf(order.getRoofType().getDegrees())
-                .multiply(BigDecimal.valueOf(240.0));
+        if (order.getRoofType() == null) return BigDecimal.ZERO;
+        return BigDecimal.valueOf(order.getRoofType().getDegrees()).multiply(BigDecimal.valueOf(240));
     }
 }
