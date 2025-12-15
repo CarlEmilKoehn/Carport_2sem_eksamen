@@ -10,6 +10,7 @@ import io.javalin.http.Context;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 
 
 public class AdminController {
@@ -76,22 +77,20 @@ public class AdminController {
         ctx.render("admin_ordre");
     }
 
-    // Oliver: kald order mapper opdater pris og opret note/kommentar så de kan gemmes i vores db
     private static void setPrice(Context ctx) {
         Admin admin = ctx.sessionAttribute("currentAdmin");
 
         int orderId = Integer.parseInt(ctx.pathParam("orderId"));
-        BigDecimal totalPrice = BigDecimal.valueOf(Long.parseLong(ctx.formParam("price")));
+        BigDecimal totalPrice = BigDecimal.valueOf(Long.parseLong(Objects.requireNonNull(ctx.formParam("price"))));
         String comment = ctx.formParam("comment");
 
         try {
 
-            // Opdater ordre pris (ordreId, pris og connectionPool)
-            // Change mapperen skal oprette note/kommentar (ordreId, note, admin email, connectionPool)
+            OrderMapper.changeOrderPrice(orderId, totalPrice, admin, comment);
 
             ctx.attribute("succes", "Prisen er blevet nedsat. Der sendes en automatisk ordrebekræftigelse på mail til kunden.");
             ctx.redirect("/admin/dashboard");
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException | DatabaseException e) {
             ctx.attribute("fejl", "Ugyldig pris");
             ctx.redirect("/admin/ordre/" + orderId);
         }
