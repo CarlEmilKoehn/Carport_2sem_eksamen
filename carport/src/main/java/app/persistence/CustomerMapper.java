@@ -16,7 +16,7 @@ public class CustomerMapper {
 
         Customer customer;
 
-        String sql = "SELECT * FROM public.user WHERE user_email = ?";
+        String sql = "SELECT * FROM customer WHERE email = ?";
 
         try (Connection connection = ConnectionPool.getInstance().getConnection()) {
 
@@ -25,10 +25,10 @@ public class CustomerMapper {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
-                String firstname = rs.getString("user_firstname");
-                String lastname = rs.getString("user_lastname");
-                String address = rs.getString("user_adress");
-                int postalCode = rs.getInt("user_postal_code");
+                String firstname = rs.getString("firstname");
+                String lastname = rs.getString("lastname");
+                String address = rs.getString("adress");
+                int postalCode = rs.getInt("postal_code");
 
                 customer = new Customer(email, firstname, lastname, address, postalCode);
 
@@ -47,7 +47,7 @@ public class CustomerMapper {
 
         List<Customer> users = new ArrayList<>();
 
-        String sql = "SELECT * FROM public.user";
+        String sql = "SELECT * FROM customer";
         try(Connection connection = ConnectionPool.getInstance().getConnection()) {
 
             PreparedStatement stmt = connection.prepareStatement(sql);
@@ -55,11 +55,11 @@ public class CustomerMapper {
 
             while(rs.next()) {
 
-                String email = rs.getString("user_email");
-                String firstname = rs.getString("user_firstname");
-                String lastname = rs.getString("user_lastname");
-                String address = rs.getString("user_adress");
-                int postalCode = rs.getInt("user_postal_code");
+                String email = rs.getString("email");
+                String firstname = rs.getString("firstname");
+                String lastname = rs.getString("lastname");
+                String address = rs.getString("adress");
+                int postalCode = rs.getInt("postal_code");
 
                 users.add(new Customer(email, firstname, lastname, address, postalCode));
 
@@ -72,7 +72,7 @@ public class CustomerMapper {
     }
 
     public static void registerCustomer(String email, String firstName, String lastName, String address, int postalCode) throws DatabaseException {
-        String sql = "INSERT INTO public.user (user_email, user_firstname, user_lastname, user_adress, user_postal_code) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO customer (email, firstname, lastname, adress, postal_code) VALUES (?, ?, ?, ?, ?)";
 
         try(Connection connection = ConnectionPool.getInstance().getConnection()) {
             PreparedStatement ps = connection.prepareStatement(sql);
@@ -89,23 +89,19 @@ public class CustomerMapper {
 
     public static boolean isEmailInSystem(String email) throws DatabaseException {
 
-        String sql = "SELECT email FROM public.user WHERE user_email = ?";
+        String sql = "SELECT 1 FROM customer WHERE email = ?";
 
-        try(Connection connection = ConnectionPool.getInstance().getConnection()) {
+        try (Connection connection = ConnectionPool.getInstance().getConnection()) {
 
             PreparedStatement ps = connection.prepareStatement(sql);
-
             ps.setString(1, email);
 
             ResultSet rs = ps.executeQuery();
-
-            if(rs.next()){
-                return true;
-            }
-            return false;
+            return rs.next();
 
         } catch (SQLException e) {
             throw new DatabaseException("Can't connect to DB: " + e.getMessage());
         }
     }
+
 }

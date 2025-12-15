@@ -68,38 +68,39 @@ CREATE TABLE IF NOT EXISTS public.unit
     CONSTRAINT unit_pkey PRIMARY KEY (unit_id)
     );
 
-CREATE TABLE IF NOT EXISTS public."user"
+CREATE TABLE IF NOT EXISTS public."customer"
 (
-    user_email character varying COLLATE pg_catalog."default" NOT NULL,
-    user_firstname character varying COLLATE pg_catalog."default" NOT NULL,
-    user_lastname character varying COLLATE pg_catalog."default" NOT NULL,
-    user_adress character varying COLLATE pg_catalog."default" NOT NULL,
-    user_postal_code integer NOT NULL,
-    CONSTRAINT user_pkey PRIMARY KEY (user_email)
+    email character varying COLLATE pg_catalog."default" NOT NULL,
+    firstname character varying COLLATE pg_catalog."default" NOT NULL,
+    lastname character varying COLLATE pg_catalog."default" NOT NULL,
+    adress character varying COLLATE pg_catalog."default" NOT NULL,
+    postal_code integer NOT NULL,
+    CONSTRAINT customer_pkey PRIMARY KEY (email)
     );
 
-CREATE TABLE IF NOT EXISTS public.user_order
+CREATE TABLE IF NOT EXISTS public.customer_order
 (
-    user_order_id serial NOT NULL,
-    user_email character varying COLLATE pg_catalog."default" NOT NULL,
+    customer_order_id serial NOT NULL,
+    customer_email character varying COLLATE pg_catalog."default" NOT NULL,
     order_status character varying COLLATE pg_catalog."default" NOT NULL,
     roof_type_id integer NOT NULL,
     width_mm integer NOT NULL,
+    length_mm interger NOT NULL,
     height_mm integer NOT NULL,
     shed_id integer,
     created_at timestamp with time zone NOT NULL DEFAULT now(),
     order_price numeric(10, 2) NOT NULL,
-    CONSTRAINT user_order_pkey PRIMARY KEY (user_order_id)
+    CONSTRAINT customer_order_pkey PRIMARY KEY (customer_order_id)
     );
 
-CREATE TABLE IF NOT EXISTS public.user_order_change
+CREATE TABLE IF NOT EXISTS public.customer_order_change
 (
-    user_order_change_id serial NOT NULL,
-    user_order_id integer NOT NULL,
+    customer_order_change_id serial NOT NULL,
+    customer_order_id integer NOT NULL,
     admin_email character varying COLLATE pg_catalog."default" NOT NULL,
     admin_note character varying COLLATE pg_catalog."default",
     created_at timestamp with time zone NOT NULL DEFAULT now(),
-    CONSTRAINT user_order_change_pkey PRIMARY KEY (user_order_change_id)
+    CONSTRAINT costumer_order_change_pkey PRIMARY KEY (customer_order_change_id)
     );
 
 ALTER TABLE IF EXISTS public.material_product
@@ -124,43 +125,43 @@ ALTER TABLE IF EXISTS public.order_material
 
 
 ALTER TABLE IF EXISTS public.order_material
-    ADD CONSTRAINT order_material_user_order_id_fkey FOREIGN KEY (user_order_id)
-    REFERENCES public.user_order (user_order_id) MATCH SIMPLE
+    ADD CONSTRAINT order_material_customer_order_id_fkey FOREIGN KEY (customer_order_id)
+    REFERENCES public.customer_order (customer_order_id) MATCH SIMPLE
     ON UPDATE NO ACTION
        ON DELETE NO ACTION;
 
 
-ALTER TABLE IF EXISTS public.user_order
-    ADD CONSTRAINT user_order_roof_type_id_fkey FOREIGN KEY (roof_type_id)
+ALTER TABLE IF EXISTS public.customer_order
+    ADD CONSTRAINT customer_order_roof_type_id_fkey FOREIGN KEY (roof_type_id)
     REFERENCES public.roof_type (roof_type_id) MATCH SIMPLE
     ON UPDATE NO ACTION
        ON DELETE NO ACTION;
 
 
-ALTER TABLE IF EXISTS public.user_order
-    ADD CONSTRAINT user_order_shed_id_fkey FOREIGN KEY (shed_id)
+ALTER TABLE IF EXISTS public.customer_order
+    ADD CONSTRAINT customer_order_shed_id_fkey FOREIGN KEY (shed_id)
     REFERENCES public.shed (shed_id) MATCH SIMPLE
     ON UPDATE NO ACTION
        ON DELETE NO ACTION;
 
 
-ALTER TABLE IF EXISTS public.user_order
-    ADD CONSTRAINT user_order_user_email_fkey FOREIGN KEY (user_email)
-    REFERENCES public."user" (user_email) MATCH SIMPLE
+ALTER TABLE IF EXISTS public.customer_order
+    ADD CONSTRAINT customer_order_customer_email_fkey FOREIGN KEY (email)
+    REFERENCES public."customer" (email) MATCH SIMPLE
     ON UPDATE NO ACTION
        ON DELETE NO ACTION;
 
 
-ALTER TABLE IF EXISTS public.user_order_change
-    ADD CONSTRAINT user_order_change_admin FOREIGN KEY (admin_email)
+ALTER TABLE IF EXISTS public.customer_order_change
+    ADD CONSTRAINT customer_order_change_admin FOREIGN KEY (admin_email)
     REFERENCES public.admin (admin_email) MATCH SIMPLE
     ON UPDATE NO ACTION
        ON DELETE NO ACTION;
 
 
-ALTER TABLE IF EXISTS public.user_order_change
-    ADD CONSTRAINT user_order_change_user_order_id_fkey FOREIGN KEY (user_order_id)
-    REFERENCES public.user_order (user_order_id) MATCH SIMPLE
+ALTER TABLE IF EXISTS public.customer_order_change
+    ADD CONSTRAINT customer_order_change_customer_order_id_fkey FOREIGN KEY (customer_order_id)
+    REFERENCES public.customer_order (customer_order_id) MATCH SIMPLE
     ON UPDATE NO ACTION
        ON DELETE NO ACTION;
 

@@ -13,18 +13,33 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CustomerMapperTest {
 
+    @BeforeAll
+    static void initTestConnectionPool() {
+
+        ConnectionPool.reset();
+
+        String user = "postgres";
+        String password = "postgres";
+        String url = "jdbc:postgresql://localhost:5432/%s";
+        String db = "carport";
+
+        ConnectionPool.getInstance(user, password, url, db);
+    }
+
     @BeforeEach
     void setUp() throws SQLException {
 
         try (Connection connection = ConnectionPool.getInstance().getConnection()) {
 
-            connection.prepareStatement("DELETE FROM test.user").executeUpdate();
+            connection.setSchema("test");
+
+            connection.prepareStatement("DELETE FROM customer").executeUpdate();
 
             String sql = """
-                INSERT INTO test.user
-                (user_email, user_firstname, user_lastname, user_adress, user_postal_code)
-                VALUES (?, ?, ?, ?, ?)
-                """;
+            INSERT INTO customer
+            (email, firstname, lastname, adress, postal_code)
+            VALUES (?, ?, ?, ?, ?)
+            """;
 
             PreparedStatement ps = connection.prepareStatement(sql);
             ps.setString(1, "test@test.com");
@@ -35,6 +50,7 @@ class CustomerMapperTest {
             ps.executeUpdate();
         }
     }
+
 
     @Test
     void testGetCustomerByEmail() throws DatabaseException {
@@ -83,7 +99,11 @@ class CustomerMapperTest {
         List<Customer> customers = CustomerMapper.getAllCustomers();
 
         assertEquals(1, customers.size());
-        assertEquals("test@test.com", customers.get(0).getEmail());
+        assertTrue(
+                customers.stream()
+                        .anyMatch(c -> c.getEmail().equals("test@test.com"))
+        );
+
     }
 
     @Test
@@ -95,5 +115,11 @@ class CustomerMapperTest {
     void testIsEmailInSystemFalse() throws DatabaseException {
         assertFalse(CustomerMapper.isEmailInSystem("unknown@test.com"));
     }
+
+    @AfterAll
+    static void tearDown() {
+        ConnectionPool.reset();
+    }
+
 }
 
