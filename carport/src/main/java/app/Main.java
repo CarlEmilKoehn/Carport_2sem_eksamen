@@ -28,8 +28,4 @@ public class Main {
         OrderController.addRoutes(app);
         AdminController.addRoutes(app);
     }
-
-    void loginTest() {
-
-    }
 }
