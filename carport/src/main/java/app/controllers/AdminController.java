@@ -30,6 +30,7 @@ public class AdminController {
                     ? OrderMapper.getAllOrders()
                     : OrderMapper.getOrdersByStatus(status);
 
+
             ctx.attribute("allOrders", orders);
             ctx.attribute("selectedStatus", status == null ? "all" : status.toUpperCase());
             ctx.render("admin_dashboard");
