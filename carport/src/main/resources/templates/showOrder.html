@@ -1,29 +1,135 @@
-<section class="price-update">
-  <h2>Ændr pris</h2>
+<!DOCTYPE html>
+<html lang="da" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin – Ordre</title>
+  <link rel="stylesheet" th:href="@{/css/admin_login.css}">
+</head>
+<body>
 
-  <form th:action="@{/admin/ordre/{id}/price(id=${order.id})}" method="post">
-
-    <div>
-      <label for="price">Ny pris (kr):</label>
-      <input type="number"
-             id="price"
-             name="price"
-             th:value="${order.totalPrice}"
-             required>
+<header class="admin-header">
+  <div class="header-content">
+    <h1 th:text="'Ordre #' + ${order.id}"></h1>
+    <div class="admin-info">
+      <a th:href="@{/admin/dashboard}" class="logout-btn">Tilbage</a>
+      <a th:href="@{/admin/logout}" class="logout-btn">Log ud</a>
     </div>
+  </div>
+</header>
 
-    <div>
-      <label for="comment">Kommentar til kunden:</label>
-      <textarea id="comment"
-                name="comment"
-                rows="4"
-                placeholder="Fx forklaring på prisjustering..."
-                required></textarea>
+<main class="dashboard-container">
+
+  <div th:if="${flashSuccess}" class="message success" th:text="${flashSuccess}"></div>
+  <div th:if="${flashError}" class="message error" th:text="${flashError}"></div>
+
+  <section class="orders-section">
+    <div class="orders-table-container">
+
+      <h2>Ordre detaljer</h2>
+
+      <p><strong>Email:</strong> <span th:text="${order.email != null ? order.email : '—'}"></span></p>
+      <p><strong>Status:</strong> <span th:text="${order.status != null ? order.status : '—'}"></span></p>
+
+      <p>
+        <strong>Carport mål (X/Y/Z):</strong>
+        <span th:text="${order.lengthMM}"></span> /
+        <span th:text="${order.widthMM}"></span> /
+        <span th:text="${order.heightMM}"></span> mm
+      </p>
+
+      <p>
+        <strong>Oprettet:</strong>
+        <span th:text="${order.createdAt != null ? order.createdAt : '—'}"></span>
+      </p>
+
+      <p>
+        <strong>Skur:</strong>
+        <span th:if="${order.class.simpleName == 'OrderWithShed' && order.shed != null}">
+          Ja –
+          <span th:text="${order.shed.lengthMM}"></span> x
+          <span th:text="${order.shed.widthMM}"></span> mm
+        </span>
+        <span th:unless="${order.class.simpleName == 'OrderWithShed' && order.shed != null}">Nej</span>
+      </p>
+
+      <p>
+        <strong>Tagtype:</strong>
+        <span th:text="${order.roofType != null ? order.roofType.name : '—'}"></span>
+      </p>
+
+      <p th:if="${order.roofType != null && order.roofType.degrees > 0}">
+        <strong>Hældning:</strong>
+        <span th:text="${order.roofType.degrees}"></span>°
+      </p>
+
+      <hr>
+
+      <h2>Pris</h2>
+      <p><strong>Nuværende pris:</strong> <span th:text="${basePrice != null ? basePrice + ' kr' : '—'}"></span></p>
+      <p><strong>Foreslået (+40%):</strong> <span th:text="${suggestedPrice != null ? suggestedPrice + ' kr' : '—'}"></span></p>
+
+      <form th:action="@{/admin/ordre/{id}/price(id=${order.id})}" method="post">
+        <label for="price"><strong>Ny pris (du kan ændre)</strong></label><br>
+        <input id="price" type="number" step="0.01" min="0" name="price"
+               th:value="${suggestedPrice}" required>
+
+        <br><br>
+
+        <label for="comment"><strong>Kommentar (valgfri)</strong></label><br>
+        <input id="comment" type="text" name="comment"
+               placeholder="Fx: Pris justeret pga. specialmål">
+
+        <br><br>
+
+        <button type="submit" class="view-btn">Gem pris (sætter ADJUSTED)</button>
+      </form>
+
+      <hr>
+
+      <h2>Materialer</h2>
+      <div th:if="${order.materials == null || order.materials.isEmpty()}">
+        <p>Ingen materialer fundet.</p>
+      </div>
+
+      <table class="orders-table" th:if="${order.materials != null && !order.materials.isEmpty()}">
+        <thead>
+        <tr>
+          <th>Navn</th>
+          <th>Antal</th>
+          <th>Note</th>
+          <th>Total</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="m : ${order.materials}">
+          <td th:text="${m.productName != null ? m.productName : '—'}"></td>
+          <td th:text="${m.quantity}"></td>
+          <td th:text="${m.note != null ? m.note : ''}"></td>
+          <td th:text="${m.totalPrice != null ? m.totalPrice + ' kr' : '—'}"></td>
+        </tr>
+        </tbody>
+      </table>
+
+      <hr>
+
+      <h2>Historik / kommentarer</h2>
+      <div th:if="${order.comments == null || order.comments.isEmpty()}">
+        <p>Ingen historik.</p>
+      </div>
+
+      <ul th:if="${order.comments != null && !order.comments.isEmpty()}">
+        <li th:each="c : ${order.comments}">
+          <strong th:text="${c.adminEmail != null ? c.adminEmail : '—'}"></strong>
+          –
+          <span th:text="${c.note != null ? c.note : ''}"></span>
+          (<span th:text="${c.createdAt != null ? c.createdAt : '—'}"></span>)
+        </li>
+      </ul>
+
     </div>
+  </section>
 
-    <button type="submit">Opdater pris</button>
-  </form>
-
-  <p class="success" th:if="${succes}" th:text="${succes}"></p>
-  <p class="error" th:if="${fejl}" th:text="${fejl}"></p>
-</section>
+</main>
+</body>
+</html>
