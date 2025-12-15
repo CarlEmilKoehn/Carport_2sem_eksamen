@@ -25,7 +25,7 @@ public class AdminMapper {
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DatabaseException("Kunne ikke oprette admin i databasen: " + e.getMessage());
+            throw new DatabaseException("Kunne ikke oprette admin i databasen: ", e.getMessage());
         }
     }
 
@@ -42,12 +42,12 @@ public class AdminMapper {
                 String firstname = rs.getString("admin_firstname");
                 String lastname = rs.getString("admin_lastname");
                 return new Admin(email, null, firstname, lastname);
-            } else {
-                throw new DatabaseException("Kunne ikke hente admin med email: " + email + " fra databasen");
             }
+
+            return null;
+
         } catch (SQLException e) {
-            throw new DatabaseException("Fejl ved hentning af admin: " + e.getMessage());
-            //Inset values and atddtitions
+            throw new DatabaseException("Fejl ved hentning af admin.", "getAdminByEmail failed for email =" + email + ": " + e.getMessage());
         }
     }
 
@@ -69,7 +69,7 @@ public class AdminMapper {
             }
             return admins;
         } catch (SQLException e) {
-            throw new DatabaseException("Fejl ved hentning af alle admins fra databasen: " + e.getMessage());
+            throw new DatabaseException("Kunne ikke oprette admin lige nu.", "createAdmin failed: " + e.getMessage());
         }
     }
 
@@ -87,7 +87,7 @@ public class AdminMapper {
             ps.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DatabaseException("Fejl ved opdatering af admin: " + e.getMessage());
+            throw new DatabaseException("Fejl ved opdatering af admin: ", e.getMessage());
         }
     }
 
@@ -100,7 +100,7 @@ public class AdminMapper {
             ps.setString(1, email);
             ps.executeUpdate();
         } catch (SQLException e) {
-            throw new DatabaseException("Fejl ved sletning af admin med email: " + email + " fra databasen");
+            throw new DatabaseException("Fejl ved sletning af admin med email: " + email + " fra databasen.", e.getMessage());
         }
     }
     public static Admin login(String email, String password) throws DatabaseException {
@@ -117,14 +117,14 @@ public class AdminMapper {
             if (rs.next()) {
                 String firstname = rs.getString("admin_firstname");
                 String lastname = rs.getString("admin_lastname");
-                    return new Admin(email, password, firstname, lastname);
 
-            } else {
-                throw new DatabaseException("Ugyldig email eller password");
+                return new Admin(email, password, firstname, lastname);
             }
 
+            return null;
+
         } catch (SQLException e) {
-            throw new DatabaseException("Fejl ved hentning af admin med email: " + email + " fra databasen");
+            throw new DatabaseException("Fejl ved login lige nu.", "login SQL failed for email=" + email + ": " + e.getMessage());
         }
     }
 }

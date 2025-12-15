@@ -30,15 +30,13 @@ public class CustomerMapper {
                 String address = rs.getString("address");
                 int postalCode = rs.getInt("postal_code");
 
-                customer = new Customer(email, firstname, lastname, address, postalCode);
-
-                return customer;
-
+                return new Customer(email, firstname, lastname, address, postalCode);
             }
 
             return null;
+
         } catch (SQLException e) {
-            throw new DatabaseException("Could not be connect to DB with getCustomerByEmail: " + e.getMessage());
+            throw new DatabaseException("Fejl ved hentning af kunde.", "getCustomerByEmail failed for email=" + email + ": " + e.getMessage());
 
         }
     }
@@ -67,7 +65,7 @@ public class CustomerMapper {
 
             return users;
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+            throw new DatabaseException("Fejl ved hentning af kunder.", "getAllCustomers failed: " + e.getMessage());
         }
     }
 
@@ -83,7 +81,7 @@ public class CustomerMapper {
             ps.setInt(5, postalCode);
             ps.executeUpdate();
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB with registerCustomer: " + e.getMessage());
+            throw new DatabaseException("Kunne ikke oprette kunden.", "registerCustomer failed for email=" + email + ": " + e.getMessage());
         }
     }
 
@@ -100,7 +98,7 @@ public class CustomerMapper {
             return rs.next();
 
         } catch (SQLException e) {
-            throw new DatabaseException("Can't connect to DB: " + e.getMessage());
+            throw new DatabaseException("Fejl ved opslag af email.", "isEmailInSystem failed for email = " + email + ": " + e.getMessage());
         }
     }
 

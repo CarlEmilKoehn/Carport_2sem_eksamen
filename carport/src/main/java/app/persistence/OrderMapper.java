@@ -15,27 +15,15 @@ public class OrderMapper {
         List<Order> orders = new ArrayList<>();
 
         String sql = """
-            SELECT
-                co.customer_order_id,
-                co.customer_email,
-                co.order_status,
-                co.width_mm,
-                co.height_mm,
-                co.length_mm,
-                co.order_price,
-                co.created_at,
-                rt.roof_type_id,
-                rt.roof_type_name,
-                rt.roof_type_deg,
-                rt.roof_type_price,
-                s.shed_id,
-                s.shed_width_mm,
-                s.shed_length_mm
-            FROM customer_order co
-            JOIN roof_type rt ON co.roof_type_id = rt.roof_type_id
-            LEFT JOIN shed s ON co.shed_id = s.shed_id
-            WHERE co.order_status = ?
-            """;
+        SELECT
+        co.customer_order_id, co.customer_email, co.order_status, co.width_mm, co.height_mm, co.length_mm, co.order_price, co.created_at, 
+        rt.roof_type_id, rt.roof_type_name, rt.roof_type_deg, rt.roof_type_price, 
+        s.shed_id, s.shed_width_mm, s.shed_length_mm 
+        FROM customer_order co 
+        JOIN roof_type rt ON co.roof_type_id = rt.roof_type_id 
+        LEFT JOIN shed s ON co.shed_id = s.shed_id 
+        WHERE co.order_status = ?
+        """;
 
         try (Connection connection = ConnectionPool.getInstance().getConnection();
              PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -47,6 +35,7 @@ public class OrderMapper {
 
                     int orderID = rs.getInt("customer_order_id");
                     String email = rs.getString("customer_email");
+                    String orderStatus = rs.getString("order_status");
 
                     RoofType roofType = new RoofType(
                             rs.getInt("roof_type_id"),
@@ -64,17 +53,13 @@ public class OrderMapper {
                     List<Material> materials = MaterialMapper.getAllMaterialsFromOrder(orderID);
                     List<Comment> comments = getAllCommentsFromOrder(orderID);
 
-                    Shed shed = new Shed(
-                            rs.getInt("shed_id"),
-                            rs.getInt("shed_width_mm"),
-                            rs.getInt("shed_length_mm")
-                    );
-
-                    if (shed.getId() == 0) {
-                        orders.add(new Order(orderID, email, status, roofType,
+                    Integer shedId = (Integer) rs.getObject("shed_id");
+                    if (shedId == null) {
+                        orders.add(new Order(orderID, email, orderStatus, roofType,
                                 widthMM, heightMM, lengthMM, createdAt, materials, comments, totalPrice));
                     } else {
-                        orders.add(new OrderWithShed(orderID, email, status, roofType,
+                        Shed shed = new Shed(shedId, rs.getInt("shed_width_mm"), rs.getInt("shed_length_mm"));
+                        orders.add(new OrderWithShed(orderID, email, orderStatus, roofType,
                                 widthMM, heightMM, lengthMM, createdAt, materials, comments, totalPrice, shed));
                     }
                 }
@@ -83,9 +68,10 @@ public class OrderMapper {
             return orders;
 
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB", e.getMessage());
+            throw new DatabaseException("Fejl ved hentning af ordrer.", "getOrdersByStatus failed for status = " + status + ": " + e.getMessage());
         }
     }
+
 
     public static int createOrder(Order order) throws DatabaseException {
 
@@ -124,8 +110,9 @@ public class OrderMapper {
                 }
 
                 ResultSet rs = orderStmt.executeQuery();
+
                 if (!rs.next()) {
-                    throw new DatabaseException("Order was not created", "No ID returned");
+                    throw new DatabaseException("Ordre blev ikke skabt", "Intet ID fundet");
                 }
 
                 int orderId = rs.getInt("customer_order_id");
@@ -160,34 +147,21 @@ public class OrderMapper {
             }
 
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB", e.getMessage());
+            throw new DatabaseException("Fejl ved oprettelse af ordre.", "createOrder failed: " + e.getMessage());
         }
     }
 
     public static Order getOrderByOrderId(int orderId) throws DatabaseException {
 
         String sql = """
-            SELECT
-                co.customer_order_id,
-                co.customer_email,
-                co.order_status,
-                co.width_mm,
-                co.height_mm,
-                co.length_mm,
-                co.order_price,
-                co.created_at,
-                rt.roof_type_id,
-                rt.roof_type_name,
-                rt.roof_type_deg,
-                rt.roof_type_price,
-                s.shed_id,
-                s.shed_width_mm,
-                s.shed_length_mm
-            FROM customer_order co
-            JOIN roof_type rt ON co.roof_type_id = rt.roof_type_id
-            LEFT JOIN shed s ON co.shed_id = s.shed_id
-            WHERE co.customer_order_id = ?
-            """;
+        SELECT co.customer_order_id, co.customer_email, co.order_status, co.width_mm, co.height_mm, co.length_mm, co.order_price, co.created_at,
+        rt.roof_type_id, rt.roof_type_name, rt.roof_type_deg, rt.roof_type_price,
+        s.shed_id, s.shed_width_mm, s.shed_length_mm 
+        FROM customer_order co 
+        JOIN roof_type rt ON co.roof_type_id = rt.roof_type_id 
+        LEFT JOIN shed s ON co.shed_id = s.shed_id 
+        WHERE co.customer_order_id = ?
+        """;
 
         try (Connection connection = ConnectionPool.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -217,25 +191,23 @@ public class OrderMapper {
                 List<Material> materials = MaterialMapper.getAllMaterialsFromOrder(orderId);
                 List<Comment> comments = getAllCommentsFromOrder(orderId);
 
-                Shed shed = new Shed(
-                        rs.getInt("shed_id"),
-                        rs.getInt("shed_width_mm"),
-                        rs.getInt("shed_length_mm")
-                );
-
-                if (shed.getId() == 0) {
+                Integer shedId = (Integer) rs.getObject("shed_id");
+                if (shedId == null) {
                     return new Order(orderId, email, status, roofType,
                             widthMM, heightMM, lengthMM, createdAt, materials, comments, totalPrice);
+                } else {
+                    Shed shed = new Shed(shedId, rs.getInt("shed_width_mm"), rs.getInt("shed_length_mm"));
+                    return new OrderWithShed(orderId, email, status, roofType,
+                            widthMM, heightMM, lengthMM, createdAt, materials, comments, totalPrice, shed);
                 }
-
-                return new OrderWithShed(orderId, email, status, roofType,
-                        widthMM, heightMM, lengthMM, createdAt, materials, comments, totalPrice, shed);
             }
 
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB", e.getMessage());
+            throw new DatabaseException("Fejl ved hentning af ordre.",
+                    "getOrderByOrderId failed for orderId = " + orderId + ": " + e.getMessage());
         }
     }
+
 
     public static void changeOrderStatus(int orderId, String orderStatus) throws DatabaseException {
 
@@ -253,7 +225,7 @@ public class OrderMapper {
             stmt.executeUpdate();
 
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB", e.getMessage());
+            throw new DatabaseException("Fejl ved opdatering af ordrestatus.", "changeOrderStatus failed for orderId = " + orderId + ", status=" + orderStatus + ": " + e.getMessage());
         }
     }
 
@@ -303,12 +275,64 @@ public class OrderMapper {
             }
 
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB", e.getMessage());
+            throw new DatabaseException("Fejl ved opdatering af pris på ordren.", "changeOrderPrice failed for orderId = " + orderId + ": " + e.getMessage());
         }
     }
 
     public static List<Order> getAllOrders() throws DatabaseException {
-        return getOrdersByStatus("%");
+
+        List<Order> orders = new ArrayList<>();
+
+        String sql = "SELECT " +
+                "uo.customer_order_id, uo.customer_email, uo.order_status, uo.width_mm, uo.height_mm, uo.length_mm, uo.order_price, uo.created_at, " +
+                "rt.roof_type_id, rt.roof_type_name, rt.roof_type_deg, rt.roof_type_price, " +
+                "s.shed_id, s.shed_width_mm, s.shed_length_mm " +
+                "FROM customer_order uo " +
+                "JOIN roof_type rt ON uo.roof_type_id = rt.roof_type_id " +
+                "LEFT JOIN shed s ON uo.shed_id = s.shed_id";
+
+        try(Connection connection = ConnectionPool.getInstance().getConnection()) {
+            PreparedStatement stmt = connection.prepareStatement(sql);
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+
+                int orderID = rs.getInt("customer_order_id");
+                String email = rs.getString("customer_email");
+                String status = rs.getString("order_status");
+
+                RoofType roofType = new RoofType(
+                        rs.getInt("roof_type_id"),
+                        rs.getString("roof_type_name"),
+                        rs.getInt("roof_type_deg"),
+                        rs.getBigDecimal("roof_type_price")
+                );
+
+                int widthMM = rs.getInt("width_mm");
+                int heightMM = rs.getInt("height_mm");
+                int lengthMM = rs.getInt("length_mm");
+                Timestamp createdAt = rs.getTimestamp("created_at");
+                BigDecimal totalPrice = rs.getBigDecimal("order_price");
+
+                List<Material> materials = MaterialMapper.getAllMaterialsFromOrder(orderID);
+                List<Comment> comments = getAllCommentsFromOrder(orderID);
+
+                Integer shedId = (Integer) rs.getObject("shed_id");
+                if (shedId == null) {
+                    orders.add(new Order(orderID, email, status, roofType, widthMM, heightMM, lengthMM, createdAt, materials, comments, totalPrice));
+                } else {
+                    Shed shed = new Shed(shedId, rs.getInt("shed_width_mm"), rs.getInt("shed_length_mm"));
+                    orders.add(new OrderWithShed(orderID, email, status, roofType, widthMM, heightMM, lengthMM, createdAt, materials, comments, totalPrice, shed));
+                }
+            }
+
+            return orders;
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Fejl ved hentning af ordrer.", "getAllOrders failed: " + e.getMessage());
+
+        }
     }
 
     public static List<Comment> getAllCommentsFromOrder(int orderID) throws DatabaseException {
@@ -347,7 +371,7 @@ public class OrderMapper {
             return comments;
 
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB", e.getMessage());
+            throw new DatabaseException("Fejl ved hentning af historik.", "getAllCommentsFromOrder failed for orderId = " + orderID + ": " + e.getMessage());
         }
     }
 
@@ -375,10 +399,10 @@ public class OrderMapper {
                 }
             }
 
-            throw new DatabaseException("No roofType with slope = " + roofDeg);
+            throw new DatabaseException("Ugyldig taghældning valgt.", "getRoofTypeBySlopeDegrees no match for roofDeg = " + roofDeg);
 
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB", e.getMessage());
+            throw new DatabaseException("Fejl ved hentning af tagtype.", "getRoofTypeBySlopeDegrees failed for roofDeg = " + roofDeg + ": " + e.getMessage());
         }
     }
 }

@@ -65,7 +65,7 @@ public class MaterialMapper {
             return materials;
 
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB", e.getMessage());
+            throw new DatabaseException("Fejl ved hentning af materialer til ordren.", "getAllMaterialsFromOrder failed for orderId= " + orderId + ": " + e.getMessage());
         }
     }
 
@@ -103,10 +103,10 @@ public class MaterialMapper {
                 }
             }
 
-            throw new DatabaseException("No pillars were found, of the length >= ", String.valueOf(minLengthMM));
+            throw new DatabaseException("Ingen stolper fundet i den nødvendige længde.", "findPostForLength no match for minLengthMM = " + minLengthMM);
 
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+            throw new DatabaseException("DB-fejl ved opslag af stolper.", "findPostForLength SQL failed for minLengthMM = " + minLengthMM + ": " + e.getMessage());
         }
     }
 
@@ -146,10 +146,10 @@ public class MaterialMapper {
                 }
             }
 
-            throw new DatabaseException("No rems were found, of the length >= ", String.valueOf(minLengthMM));
+            throw new DatabaseException("Ingen remme fundet i den nødvendige længde.", "findRemForLength no match for minLengthMM = " + minLengthMM);
 
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+            throw new DatabaseException("DB-fejl ved opslag af remme.", "findRemForLength SQL failed for minLengthMM = " + minLengthMM + ": " + e.getMessage());
         }
     }
 
@@ -187,10 +187,10 @@ public class MaterialMapper {
                 }
             }
 
-            throw new DatabaseException("No rafters were found, of the length >= ", String.valueOf(minLengthMM));
+            throw new DatabaseException("Ingen spær fundet i den nødvendige længde.", "findRafterForLength no match for minLengthMM = " + minLengthMM);
 
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+            throw new DatabaseException("DB-fejl ved opslag af spær.", "findRafterForLength SQL failed for minLengthMM = " + minLengthMM + ": " + e.getMessage());
         }
     }
 
@@ -228,10 +228,10 @@ public class MaterialMapper {
                 }
             }
 
-            throw new DatabaseException("No under stern were found, of the length >= ", String.valueOf(minLengthMM));
+            throw new DatabaseException("Ingen understern fundet i den nødvendige længde.", "findUnderSternForLength no match for minLengthMM = " + minLengthMM);
 
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+            throw new DatabaseException("DB-fejl ved opslag af understern.", "findUnderSternForLength SQL failed for minLengthMM = " + minLengthMM + ": " + e.getMessage());
         }
     }
 
@@ -269,10 +269,10 @@ public class MaterialMapper {
                 }
             }
 
-            throw new DatabaseException("No over stern were found, of the length >= ", String.valueOf(minLengthMM));
+            throw new DatabaseException("Ingen overstern fundet i den nødvendige længde.", "findOverSternForLength no match for minLengthMM = " + minLengthMM);
 
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+            throw new DatabaseException("DB-fejl ved opslag af overstern.", "findOverSternForLength SQL failed for minLengthMM = " + minLengthMM + ": " + e.getMessage());
         }
     }
 
@@ -310,10 +310,10 @@ public class MaterialMapper {
                 }
             }
 
-            throw new DatabaseException("No roof sheets were found, of the length >= ", String.valueOf(minLengthMM));
+            throw new DatabaseException("Ingen tagplader fundet i den nødvendige længde.", "findRoofSheetForLength no match for minLengthMM = " + minLengthMM);
 
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+            throw new DatabaseException("DB-fejl ved opslag af tagplader.", "findRoofSheetForLength SQL failed for minLengthMM = " + minLengthMM + ": " + e.getMessage());
         }
     }
 
@@ -352,10 +352,10 @@ public class MaterialMapper {
                 }
             }
 
-            throw new DatabaseException("No cladding boards were found, of the length >= ", String.valueOf(minLengthMM));
+            throw new DatabaseException("Ingen beklædningsbrædder fundet i den nødvendige længde.", "findCladdingForHeight no match for minLengthMM = " + minLengthMM);
 
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+            throw new DatabaseException("DB-fejl ved opslag af beklædning.", "findCladdingForHeight SQL failed for minLengthMM = " + minLengthMM + ": " + e.getMessage());
         }
     }
 }
