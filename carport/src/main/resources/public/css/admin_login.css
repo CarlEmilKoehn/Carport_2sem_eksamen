@@ -1,67 +1,85 @@
-* {
-    font-family: system-ui, "Segoe UI", sans-serif, Roboto, Helvetica, Arial, sans-serif;
-    box-sizing: border-box;
+*{
     margin: 0;
     padding: 0;
-}
-
-:root {
-    --fog-blue: #003b6f;
-    --bg-light: #F5F5F3;
-    --border-light: #e2e2de;
-    --text-main: #222222;
+    box-sizing: border-box;
 }
 
 body {
-    background: var(--bg-light);
-    color: var(--text-main);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.login-container {
-    background: #ffffff;
-    padding: 54px 62px;
-    text-align: center;
-    box-shadow: 0 0 1px rgba(0, 0, 0, 0.15);
+login-container {
+    background: white;
+    padding: 50px 40px;
+    border-radius: 10px;
+    box-shadow: 0 10px 40px rgba(0,0,0,.2);
+    width: 100%;
     max-width: 400px;
-    margin: 80px auto;
+    text-align: center;
 }
 
-.login-container h1 {
-    margin-bottom: 32px;
+h1 {
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 28px;
 }
 
-.login-container form {
+form {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 15px;
 }
 
-.login-container input {
-    padding: 14px 18px;
-    border: 1px solid var(--border-light);
+input {
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s;
 }
 
-.login-container button {
-    padding: 10px 26px;
-    font-size: 14px;
-    background: var(--fog-blue);
-    color: #ffffff;
+input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+input::placeholder {
+    color: #999;
+}
+
+button {
+    padding: 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
     border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
     cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.3s;
 }
 
-.login-container button:hover {
-    opacity: 0.8;
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102,126,234,0.4);
 }
-
+button:active {
+    transform: translateY(0);
+}
 .message {
-    color: var(--text-main);
+    color: #dc3545;
     font-size: 14px;
+    margin-top: 10px;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 480px) {
     .login-container {
-        padding: 30px 18px;
-        margin: 32px 16px;
+        padding: 40px 30px;
     }
+
 }
