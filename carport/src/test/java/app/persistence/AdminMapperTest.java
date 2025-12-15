@@ -17,6 +17,18 @@ public class AdminMapperTest {
     private static final String TEST_ADMIN_FIRSTNAME = "Admin";
     private static final String TEST_ADMIN_LASTNAME = "Test";
 
+    @BeforeAll
+    static void initTestConnectionPool() {
+        ConnectionPool.reset();
+
+        ConnectionPool.getInstance(
+                "postgres",
+                "postgres",
+                "jdbc:postgresql://localhost:5432/%s",
+                "carport"
+        );
+    }
+
     @BeforeEach
     void oprydningFørTest() throws SQLException {
         try (Connection connection = ConnectionPool.getInstance().getConnection()) {
@@ -24,15 +36,6 @@ public class AdminMapperTest {
             connection.prepareStatement("DELETE FROM admin").executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    @AfterEach
-    void sletTestAdmin() throws DatabaseException {
-        try {
-            AdminMapper.deleteAdmin(TEST_ADMIN_EMAIL);
-        } catch (DatabaseException e) {
-
         }
     }
 
@@ -134,5 +137,11 @@ void testGetAdminMedUgyldigEmail() {
         AdminMapper.getAdminByEmail("Ugyldig email");
     });
     }
+
+    @AfterAll
+    static void shutdownPool() {
+        ConnectionPool.reset();
+    }
+
 }
 

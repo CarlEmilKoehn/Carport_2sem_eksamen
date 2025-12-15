@@ -112,15 +112,18 @@ public class MaterialMapper {
 
     public static Material findRemForLength(int minLengthMM) throws DatabaseException{
 
-        String sql = "SELECT " +
-                     "mp.material_product_id, mp.material_product_name, mp.material_product_description, mp.length_mm, mp.material_price, " +
-                     "u.unit_name, u.unit_short_name " +
-                     "FROM material_product mp " +
-                     "JOIN unit u ON mp.unit_id = u.unit_id " +
-                     "WHERE mp.length_mm >= ? " +
-                     "AND mc.material_category_name = 'Rem/Spær' " +
-                     "ORDER BY mp.length_mm ASC " +
-                     "LIMIT 1;";
+        String sql =
+                "SELECT " +
+                        "mp.material_product_id, mp.material_product_name, mp.material_product_description, " +
+                        "mp.length_mm, mp.material_price, " +
+                        "u.unit_name, u.unit_short_name " +
+                        "FROM material_product mp " +
+                        "JOIN unit u ON mp.unit_id = u.unit_id " +
+                        "JOIN material_category mc ON mp.material_category_id = mc.material_category_id " +
+                        "WHERE mp.length_mm >= ? " +
+                        "AND mc.material_category_name = 'Rem/Spær' " +
+                        "ORDER BY mp.length_mm ASC " +
+                        "LIMIT 1";
 
         try(Connection connection = ConnectionPool.getInstance().getConnection()) {
             PreparedStatement ps = connection.prepareStatement(sql);
