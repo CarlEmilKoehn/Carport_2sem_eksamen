@@ -70,7 +70,7 @@ public class AdminController {
                 ctx.sessionAttribute("flashError", "DB-fejl: " + e.getMessage());
                 ctx.redirect("/admin/dashboard");
             } catch (Exception e) {
-                // så du ikke får hard 500 uden besked
+
                 ctx.sessionAttribute("flashError", "Fejl ved visning af ordre: " + e.getMessage());
                 ctx.redirect("/admin/dashboard");
             }
@@ -119,7 +119,7 @@ public class AdminController {
             String priceParam = Objects.requireNonNull(ctx.formParam("price"));
             BigDecimal newPrice = new BigDecimal(priceParam).setScale(2, RoundingMode.HALF_UP);
 
-            String comment = ctx.formParam("comment"); // valgfri
+            String comment = ctx.formParam("comment");
 
             OrderMapper.changeOrderPrice(orderId, newPrice, admin, comment);
             OrderMapper.changeOrderStatus(orderId, "ADJUSTED");
