@@ -34,7 +34,7 @@
         <article class="card">
 
             <h2>Carport med fladt tag</h2>
-            <form th:action="@{/carportFlatRoof}" method="post" class="carportForm">
+            <form th:action="@{/carportSlopedRoof}" method="post" class="carportForm">
 
                 <label>Carport bredde</label>
                 <select name="carportWidthMm" required>
@@ -65,7 +65,7 @@
                     <option value="6600" th:selected="${carportLengthMm == 6600}">660 cm</option>
                     <option value="7200" th:selected="${carportLengthMm == 7200}">720 cm</option>
                     <option value="7800" th:selected="${carportLengthMm == 7800}">780 cm</option>
-                </select>                <h3>Taghældning</h3>
+                </select>                <label>Taghældning</label>
 
                 <select name="roofSlopeDeg" required>
                     <option value="">Vælg taghældning</option>
