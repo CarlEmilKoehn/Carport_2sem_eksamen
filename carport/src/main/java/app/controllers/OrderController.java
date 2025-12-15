@@ -29,14 +29,17 @@ public class OrderController {
                 int orderId = OrderMapper.createOrder(order);
                 order.setId(orderId);
 
-                boolean mailOK = sendOrderReceivedEmail(order);
+                //boolean mailOK = sendOrderReceivedEmail(order);
 
+                /*
                 ctx.sessionAttribute(
                         mailOK ? "flashSuccess" : "flashError",
                         mailOK
                                 ? "Ordre oprettet og bekræftelse sendt."
                                 : "Ordre oprettet, men mail kunne ikke sendes."
                 );
+
+                    */
 
                 ctx.sessionAttribute("currentOrderId", orderId);
                 ctx.redirect("/");
@@ -112,7 +115,7 @@ public class OrderController {
         int slopeDeg = parseInt(require(ctx.formParam("roofSlopeDeg"), "Taghældning mangler."), "Ugyldig taghældning.");
         RoofType roofType = OrderMapper.getRoofTypeBySlopeDegrees(slopeDeg);
 
-        boolean hasShed = ctx.formParam("shedWidthMm") != null && ctx.formParam("shedLengthMm") != null;
+        boolean hasShed = ctx.formParam("hasShed") != null;
 
         CustomerMapper.registerCustomer(email, firstname, lastname, address, postalCode);
 
