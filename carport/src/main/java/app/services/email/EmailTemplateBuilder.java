@@ -112,7 +112,6 @@ public class EmailTemplateBuilder {
         }
     }
 
-    //TODO insert which domain to redirect to.
     public String buildPriceGivenText(Order order) {
 
         return """
@@ -129,16 +128,4 @@ public class EmailTemplateBuilder {
                         order.getTotalPrice());
     }
 
-    public String buildOrderPaidText(Order order) {
-
-        return """
-                Tak for dit køb!
-                
-                Ordre-ID: %d
-                Din betaling er modtaget.
-                
-                Vedhæftet finder du styklisten og tegningen.
-                """.formatted(
-                    order.getId());
-    }
 }

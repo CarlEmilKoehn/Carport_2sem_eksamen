@@ -54,51 +54,6 @@ public class OrderController {
             }
         });
 
-        app.post("/order/{orderId}/paid", ctx -> {
-            try {
-                int orderId = parseOrderId(ctx);
-
-                Order order = OrderMapper.getOrderByOrderId(orderId);
-                if (order == null) {
-                    throw new IllegalArgumentException("Ordren findes ikke.");
-                }
-
-                OrderMapper.changeOrderStatus(orderId, "ACCEPTED");
-
-                if (order.getMaterials() == null) {
-                    order.setMaterials(new ArrayList<>());
-                }
-
-                boolean mailOK = sendOrderPaidEmail(order);
-
-                ctx.sessionAttribute(
-                        mailOK ? "flashSuccess" : "flashError",
-                        mailOK
-                                ? "Betaling registreret og kvittering sendt."
-                                : "Betaling registreret, men kvittering kunne ikke sendes."
-                );
-
-                ctx.redirect("/");
-
-            } catch (IllegalArgumentException | DatabaseException e) {
-                ctx.sessionAttribute("flashError", e.getMessage());
-                ctx.redirect("/");
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                ctx.sessionAttribute("flashError", "Der skete en uventet fejl. Prøv igen.");
-                ctx.redirect("/");
-            }
-        });
-    }
-
-    private static int parseOrderId(Context ctx) {
-        try {
-            return Integer.parseInt(ctx.pathParam("orderId"));
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            throw new IllegalArgumentException("Ugyldigt orderId i URL.");
-        }
     }
 
     private static Order createOrderFromForm(Context ctx) throws DatabaseException {
@@ -161,17 +116,6 @@ public class OrderController {
             return true;
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    private static boolean sendOrderPaidEmail(Order order) {
-        CarportMailService mailService = new CarportMailService(new MailSender());
-        try {
-            mailService.sendOrderPaid(order);
-            return true;
-        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
