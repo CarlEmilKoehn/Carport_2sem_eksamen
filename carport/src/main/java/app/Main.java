@@ -32,6 +32,5 @@ public class Main {
         CustomerController.addRoutes(app);
         OrderController.addRoutes(app);
         AdminController.addRoutes(app);
-
     }
 }
