@@ -35,8 +35,8 @@ public class OrderMapper {
                 orderStmt.setInt(3, order.getWidthMM());
                 orderStmt.setInt(4, order.getHeightMM());
                 orderStmt.setInt(5, order.getLengthMM());
-                orderStmt.setBigDecimal(5, order.getTotalPrice());
-                orderStmt.setInt(6, order.getRoofType().getId());
+                orderStmt.setBigDecimal(6, order.getTotalPrice());
+                orderStmt.setInt(7, order.getRoofType().getId());
 
                 Shed shed = null;
                 if (order instanceof OrderWithShed ows) {
@@ -44,9 +44,9 @@ public class OrderMapper {
                 }
 
                 if (shed != null) {
-                    orderStmt.setInt(7, shed.getId());
+                    orderStmt.setInt(8, shed.getId());
                 } else {
-                    orderStmt.setNull(7, Types.INTEGER);
+                    orderStmt.setNull(8, Types.INTEGER);
                 }
 
                 ResultSet rs = orderStmt.executeQuery();
@@ -108,8 +108,8 @@ public class OrderMapper {
                 "s.shed_id, s.shed_width_mm, s.shed_length_mm " +
                 "FROM public.user_order uo " +
                 "JOIN roof_type rt ON uo.roof_type_id = rt.roof_type_id " +
-                "LEFT JOIN shed s ON uo.shed_id = s.shed_id" +
-                "WHERE uo.order_id = ?";
+                "LEFT JOIN shed s ON uo.shed_id = s.shed_id " +
+                "WHERE uo.user_order_id = ?";
 
         try(Connection connection = ConnectionPool.getInstance().getConnection()) {
             PreparedStatement ps = connection.prepareStatement(sql);
@@ -117,6 +117,8 @@ public class OrderMapper {
             ps.setInt(1, orderId);
 
             try(ResultSet rs = ps.executeQuery()) {
+
+                if (!rs.next()) return null;
 
                 String email = rs.getString("user_email");
                 String status = rs.getString("order_status");

@@ -85,6 +85,7 @@ CREATE TABLE IF NOT EXISTS public.user_order
     order_status character varying COLLATE pg_catalog."default" NOT NULL,
     roof_type_id integer NOT NULL,
     width_mm integer NOT NULL,
+    length_mm integer NOT NULL,
     height_mm integer NOT NULL,
     shed_id integer,
     created_at timestamp with time zone NOT NULL DEFAULT now(),
