@@ -17,17 +17,28 @@ public class MaterialMapper {
 
         List<Material> materials = new ArrayList<>();
 
-        String sql = "SELECT " +
-                     "om.order_material_id, om.user_order_id, om.material_product_id, om.quantity, om.note, om.total_price, " +
-                     "mp.material_product_name, mp.material_product_description, mp.length_mm, mp.material_price, " +
-                     "u.unit_name, u.unit_short_name " +
-                     "FROM public.order_material om " +
-                     "JOIN material_product mp ON om.material_product_id = mp.material_product_id " +
-                     "JOIN unit u ON mp.unit_id = u.unit_id " +
-                     "WHERE om.user_order_id = ?;";
+        String sql = """
+            SELECT
+                om.order_material_id,
+                om.customer_order_id,
+                om.material_product_id,
+                om.quantity,
+                om.note,
+                om.total_price,
+                mp.material_product_name,
+                mp.material_product_description,
+                mp.length_mm,
+                mp.material_price,
+                u.unit_name,
+                u.unit_short_name
+            FROM order_material om
+            JOIN material_product mp ON om.material_product_id = mp.material_product_id
+            JOIN unit u ON mp.unit_id = u.unit_id
+            WHERE om.customer_order_id = ?
+            """;
 
-        try(Connection connection = ConnectionPool.getInstance().getConnection()) {
-            PreparedStatement ps = connection.prepareStatement(sql);
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setInt(1, orderId);
 
@@ -35,42 +46,26 @@ public class MaterialMapper {
 
             while (rs.next()) {
 
-                int orderMaterialId = rs.getInt("order_material_id");
-                int userOrderId = rs.getInt("user_order_id");
-                int materialProductId = rs.getInt("material_product_id");
-                int quantity = rs.getInt("quantity");
-                String note = rs.getString("note");
-                BigDecimal totalPrice = rs.getBigDecimal("total_price");
-
-                String productName = rs.getString("material_product_name");
-                String productDescription = rs.getString("material_product_description");
-                Integer lengthMM = rs.getObject("length_mm", Integer.class);
-                BigDecimal unitPrice = rs.getBigDecimal("material_price");
-                String unitName = rs.getString("unit_name");
-                String unitShortName = rs.getString("unit_short_name");
-
-                Material material = new Material(
-                        orderMaterialId,
-                        userOrderId,
-                        materialProductId,
-                        quantity,
-                        totalPrice,
-                        note,
-                        productName,
-                        productDescription,
-                        lengthMM,
-                        unitName,
-                        unitShortName,
-                        unitPrice
-                );
-
-                materials.add(material);
+                materials.add(new Material(
+                        rs.getInt("order_material_id"),
+                        rs.getInt("customer_order_id"),
+                        rs.getInt("material_product_id"),
+                        rs.getInt("quantity"),
+                        rs.getBigDecimal("total_price"),
+                        rs.getString("note"),
+                        rs.getString("material_product_name"),
+                        rs.getString("material_product_description"),
+                        rs.getObject("length_mm", Integer.class),
+                        rs.getString("unit_name"),
+                        rs.getString("unit_short_name"),
+                        rs.getBigDecimal("material_price")
+                ));
             }
 
             return materials;
-            
+
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+            throw new DatabaseException("Could not connect to DB", e.getMessage());
         }
     }
 
@@ -79,7 +74,7 @@ public class MaterialMapper {
         String sql = "SELECT " +
                      "mp.material_product_id, mp.material_product_name, mp.material_product_description, mp.length_mm, mp.material_price, " +
                      "u.unit_name, u.unit_short_name " +
-                     "FROM public.material_product mp " +
+                     "FROM material_product mp " +
                      "JOIN unit u ON mp.unit_id = u.unit_id " +
                      "JOIN material_category mc ON mp.material_category_id = mc.material_category_id " +
                      "WHERE mp.length_mm >= ? " +
@@ -120,7 +115,7 @@ public class MaterialMapper {
         String sql = "SELECT " +
                      "mp.material_product_id, mp.material_product_name, mp.material_product_description, mp.length_mm, mp.material_price, " +
                      "u.unit_name, u.unit_short_name " +
-                     "FROM public.material_product mp " +
+                     "FROM material_product mp " +
                      "JOIN unit u ON mp.unit_id = u.unit_id " +
                      "WHERE mp.length_mm >= ? " +
                      "AND mc.material_category_name = 'Rem/Spær' " +
@@ -160,7 +155,7 @@ public class MaterialMapper {
         String sql = "SELECT " +
                      "mp.material_product_id, mp.material_product_name, mp.material_product_description, mp.length_mm, mp.material_price, " +
                      "u.unit_name, u.unit_short_name " +
-                     "FROM public.material_product mp " +
+                     "FROM material_product mp " +
                      "JOIN unit u ON mp.unit_id = u.unit_id " +
                      "JOIN material_category mc ON mp.material_category_id = mc.material_category_id " +
                      "WHERE mp.length_mm >= ? " +
@@ -201,7 +196,7 @@ public class MaterialMapper {
         String sql = "SELECT " +
                      "mp.material_product_id, mp.material_product_name, mp.material_product_description, mp.length_mm, mp.material_price, " +
                      "u.unit_name, u.unit_short_name " +
-                     "FROM public.material_product mp " +
+                     "FROM material_product mp " +
                      "JOIN unit u ON mp.unit_id = u.unit_id " +
                      "JOIN material_category mc ON mp.material_category_id = mc.material_category_id " +
                      "WHERE mp.length_mm >= ? " +
@@ -242,7 +237,7 @@ public class MaterialMapper {
         String sql = "SELECT " +
                      "mp.material_product_id, mp.material_product_name, mp.material_product_description, mp.length_mm, mp.material_price, " +
                      "u.unit_name, u.unit_short_name " +
-                     "FROM public.material_product mp " +
+                     "FROM material_product mp " +
                      "JOIN unit u ON mp.unit_id = u.unit_id " +
                      "JOIN material_category mc ON mp.material_category_id = mc.material_category_id " +
                      "WHERE mp.length_mm >= ? " +
@@ -283,7 +278,7 @@ public class MaterialMapper {
         String sql = "SELECT " +
                      "mp.material_product_id, mp.material_product_name, mp.material_product_description, mp.length_mm, mp.material_price, " +
                      "u.unit_name, u.unit_short_name " +
-                     "FROM public.material_product mp " +
+                     "FROM material_product mp " +
                      "JOIN unit u ON mp.unit_id = u.unit_id " +
                      "JOIN material_category mc ON mp.material_category_id = mc.material_category_id " +
                      "WHERE mp.length_mm >= ? " +
@@ -325,7 +320,7 @@ public class MaterialMapper {
                      "mp.material_product_id, mp.material_product_name, mp.material_product_description, " +
                      "mp.length_mm, mp.material_price, " +
                      "u.unit_name, u.unit_short_name " +
-                     "FROM public.material_product mp " +
+                     "FROM material_product mp " +
                      "JOIN unit u ON mp.unit_id = u.unit_id " +
                      "JOIN material_category mc ON mp.material_category_id = mc.material_category_id " +
                      "WHERE mp.length_mm >= ? " +

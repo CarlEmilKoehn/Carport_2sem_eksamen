@@ -12,7 +12,7 @@ import java.util.List;
 
 public class AdminMapper {
     public static void createAdmin(Admin admin) throws DatabaseException {
-        String sql = "INSERT INTO public.admin (admin_email, admin_password, admin_firstname, admin_lastname) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO admin (admin_email, admin_password, admin_firstname, admin_lastname) VALUES (?, ?, ?, ?)";
 
         try (Connection connection = ConnectionPool.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -30,7 +30,7 @@ public class AdminMapper {
     }
 
     public static Admin getAdminByEmail(String email) throws DatabaseException {
-        String sql = "SELECT * FROM public.admin WHERE admin_email = ?";
+        String sql = "SELECT * FROM admin WHERE admin_email = ?";
 
         try (Connection connection = ConnectionPool.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -53,7 +53,7 @@ public class AdminMapper {
 
     public static List<Admin> getAllAdmins() throws DatabaseException {
         List<Admin> admins = new ArrayList<>();
-        String sql = "SELECT * FROM public.admin";
+        String sql = "SELECT * FROM admin";
 
         try (Connection connection = ConnectionPool.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -74,7 +74,7 @@ public class AdminMapper {
     }
 
     public static void updateAdmin(Admin admin) throws DatabaseException {
-        String sql = "UPDATE public.admin SET admin_password = ?, admin_firstname = ?, admin_lastname = ? WHERE admin_email = ?";
+        String sql = "UPDATE admin SET admin_password = ?, admin_firstname = ?, admin_lastname = ? WHERE admin_email = ?";
 
         try (Connection connection = ConnectionPool.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -92,7 +92,7 @@ public class AdminMapper {
     }
 
     public static void deleteAdmin(String email) throws DatabaseException {
-        String sql = "DELETE FROM public.admin WHERE admin_email = ?";
+        String sql = "DELETE FROM admin WHERE admin_email = ?";
 
         try (Connection connection = ConnectionPool.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -104,7 +104,7 @@ public class AdminMapper {
         }
     }
     public static Admin login(String email, String password) throws DatabaseException {
-        String sql = "SELECT * FROM public.admin WHERE admin_email = ? AND admin_password = ?";
+        String sql = "SELECT * FROM admin WHERE admin_email = ? AND admin_password = ?";
 
         try (Connection connection = ConnectionPool.getInstance().getConnection();
              PreparedStatement ps = connection.prepareStatement(sql)) {

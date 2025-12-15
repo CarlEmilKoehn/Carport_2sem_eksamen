@@ -1,6 +1,9 @@
 package app.persistence;
 
 import app.entities.Admin;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -15,10 +18,12 @@ public class AdminMapperTest {
     private static final String TEST_ADMIN_LASTNAME = "Test";
 
     @BeforeEach
-    void oprydningFørTest() throws DatabaseException {
-        try {
-            AdminMapper.deleteAdmin(TEST_ADMIN_EMAIL);
-        } catch (DatabaseException e) {
+    void oprydningFørTest() throws SQLException {
+        try (Connection connection = ConnectionPool.getInstance().getConnection()) {
+            connection.setSchema("test");
+            connection.prepareStatement("DELETE FROM admin").executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 

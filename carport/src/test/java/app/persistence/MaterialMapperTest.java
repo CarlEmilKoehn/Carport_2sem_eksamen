@@ -2,14 +2,25 @@ package app.persistence;
 
 import app.entities.Material;
 import app.exceptions.DatabaseException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import java.sql.Connection;
+
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class MaterialMapperTest {
+
+    @BeforeEach
+    void setSchema() throws SQLException {
+        try (Connection connection = ConnectionPool.getInstance().getConnection()) {
+            connection.setSchema("test");
+        }
+    }
 
     @Test
     void getAllMaterialsFromOrder() {

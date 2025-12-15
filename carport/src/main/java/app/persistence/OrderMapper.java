@@ -2,9 +2,7 @@ package app.persistence;
 
 import app.entities.*;
 import app.exceptions.DatabaseException;
-import com.zaxxer.hikari.pool.HikariProxyResultSet;
 
-import javax.xml.crypto.Data;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
@@ -13,16 +11,31 @@ import java.util.List;
 public class OrderMapper {
 
     public static List<Order> getOrdersByStatus(String status) throws DatabaseException {
+
         List<Order> orders = new ArrayList<>();
 
-        String sql = "SELECT " +
-                "uo.user_order_id, uo.user_email, uo.order_status, uo.width_mm, uo.height_mm, uo.length_mm, uo.order_price, uo.created_at, " +
-                "rt.roof_type_id, rt.roof_type_name, rt.roof_type_deg, rt.roof_type_price, " +
-                "s.shed_id, s.shed_width_mm, s.shed_length_mm " +
-                "FROM public.user_order uo " +
-                "JOIN roof_type rt ON uo.roof_type_id = rt.roof_type_id " +
-                "LEFT JOIN shed s ON uo.shed_id = s.shed_id " +
-                "WHERE uo.order_status = ?";
+        String sql = """
+            SELECT
+                co.customer_order_id,
+                co.customer_email,
+                co.order_status,
+                co.width_mm,
+                co.height_mm,
+                co.length_mm,
+                co.order_price,
+                co.created_at,
+                rt.roof_type_id,
+                rt.roof_type_name,
+                rt.roof_type_deg,
+                rt.roof_type_price,
+                s.shed_id,
+                s.shed_width_mm,
+                s.shed_length_mm
+            FROM customer_order co
+            JOIN roof_type rt ON co.roof_type_id = rt.roof_type_id
+            LEFT JOIN shed s ON co.shed_id = s.shed_id
+            WHERE co.order_status = ?
+            """;
 
         try (Connection connection = ConnectionPool.getInstance().getConnection();
              PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -32,8 +45,8 @@ public class OrderMapper {
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
 
-                    int orderID = rs.getInt("user_order_id");
-                    String email = rs.getString("user_email");
+                    int orderID = rs.getInt("customer_order_id");
+                    String email = rs.getString("customer_email");
 
                     RoofType roofType = new RoofType(
                             rs.getInt("roof_type_id"),
@@ -57,10 +70,12 @@ public class OrderMapper {
                             rs.getInt("shed_length_mm")
                     );
 
-                    if (shed.getId() == 0 || shed.getWidthMM() == 0 || shed.getLengthMM() == 0) {
-                        orders.add(new Order(orderID, email, status, roofType, widthMM, heightMM, lengthMM, createdAt, materials, comments, totalPrice));
+                    if (shed.getId() == 0) {
+                        orders.add(new Order(orderID, email, status, roofType,
+                                widthMM, heightMM, lengthMM, createdAt, materials, comments, totalPrice));
                     } else {
-                        orders.add(new OrderWithShed(orderID, email, status, roofType, widthMM, heightMM, lengthMM, createdAt, materials, comments, totalPrice, shed));
+                        orders.add(new OrderWithShed(orderID, email, status, roofType,
+                                widthMM, heightMM, lengthMM, createdAt, materials, comments, totalPrice, shed));
                     }
                 }
             }
@@ -68,28 +83,31 @@ public class OrderMapper {
             return orders;
 
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+            throw new DatabaseException("Could not connect to DB", e.getMessage());
         }
     }
 
+    public static int createOrder(Order order) throws DatabaseException {
 
-    public static int createOrder(Order order) throws DatabaseException{
+        String orderSql = """
+            INSERT INTO customer_order
+            (customer_email, order_status, width_mm, height_mm, length_mm, order_price, roof_type_id, shed_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            RETURNING customer_order_id
+            """;
 
-        String orderSql = "INSERT INTO public.user_order " +
-                          "(user_email, order_status, width_mm, height_mm, length_mm, order_price, roof_type_id, shed_id) " +
-                          "VALUES (?, ?, ?, ?, ?, ?, ?, ?) " +
-                          "RETURNING user_order_id";
+        String materialSql = """
+            INSERT INTO order_material
+            (customer_order_id, material_product_id, quantity, note, total_price)
+            VALUES (?, ?, ?, ?, ?)
+            """;
 
-        String materialSql = "INSERT INTO public.order_material " +
-                             "(user_order_id, material_product_id, quantity, note, total_price) " +
-                             "VALUES (?, ?, ?, ?, ?)";
-
-        try(Connection connection = ConnectionPool.getInstance().getConnection()) {
+        try (Connection connection = ConnectionPool.getInstance().getConnection()) {
 
             connection.setAutoCommit(false);
 
-            try(PreparedStatement orderStmt = connection.prepareStatement(orderSql);
-                PreparedStatement materialStmt = connection.prepareStatement(materialSql)) {
+            try (PreparedStatement orderStmt = connection.prepareStatement(orderSql);
+                 PreparedStatement materialStmt = connection.prepareStatement(materialSql)) {
 
                 orderStmt.setString(1, order.getEmail());
                 orderStmt.setString(2, order.getStatus());
@@ -99,54 +117,39 @@ public class OrderMapper {
                 orderStmt.setBigDecimal(6, order.getTotalPrice());
                 orderStmt.setInt(7, order.getRoofType().getId());
 
-                Shed shed = null;
                 if (order instanceof OrderWithShed ows) {
-                    shed = ows.getShed();
-                }
-
-                if (shed != null) {
-                    orderStmt.setInt(8, shed.getId());
+                    orderStmt.setInt(8, ows.getShed().getId());
                 } else {
                     orderStmt.setNull(8, Types.INTEGER);
                 }
 
                 ResultSet rs = orderStmt.executeQuery();
-
-                int orderId;
-
-                if (rs.next()) {
-                    orderId = rs.getInt("user_order_id");
-                } else {
-                    throw new DatabaseException("Order was not confirmed", "No id returned");
+                if (!rs.next()) {
+                    throw new DatabaseException("Order was not created", "No ID returned");
                 }
+
+                int orderId = rs.getInt("customer_order_id");
 
                 if (order.getMaterials() != null) {
                     for (Material m : order.getMaterials()) {
 
-                        int materialProductId = m.getProductId();
-                        int quantity = m.getQuantity();
-                        String materialNote = m.getNote();
-                        BigDecimal materialPrice = m.getTotalPrice();
-
                         materialStmt.setInt(1, orderId);
-                        materialStmt.setInt(2, materialProductId);
-                        materialStmt.setInt(3, quantity);
+                        materialStmt.setInt(2, m.getProductId());
+                        materialStmt.setInt(3, m.getQuantity());
 
-                        if (materialNote == null || materialNote.isBlank()) {
+                        if (m.getNote() == null || m.getNote().isBlank()) {
                             materialStmt.setNull(4, Types.VARCHAR);
                         } else {
-                            materialStmt.setString(4, materialNote);
+                            materialStmt.setString(4, m.getNote());
                         }
 
-                        materialStmt.setBigDecimal(5, materialPrice);
-
+                        materialStmt.setBigDecimal(5, m.getTotalPrice());
                         materialStmt.addBatch();
                     }
                     materialStmt.executeBatch();
                 }
 
                 connection.commit();
-
                 return orderId;
 
             } catch (SQLException e) {
@@ -157,31 +160,45 @@ public class OrderMapper {
             }
 
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+            throw new DatabaseException("Could not connect to DB", e.getMessage());
         }
     }
 
     public static Order getOrderByOrderId(int orderId) throws DatabaseException {
 
-        String sql = "SELECT " +
-                "uo.user_order_id, uo.user_email, uo.order_status, uo.width_mm, uo.height_mm, uo.length_mm, uo.order_price, uo.created_at, " +
-                "rt.roof_type_id, rt.roof_type_name, rt.roof_type_deg, rt.roof_type_price, " +
-                "s.shed_id, s.shed_width_mm, s.shed_length_mm " +
-                "FROM public.user_order uo " +
-                "JOIN roof_type rt ON uo.roof_type_id = rt.roof_type_id " +
-                "LEFT JOIN shed s ON uo.shed_id = s.shed_id " +
-                "WHERE uo.user_order_id = ?";
+        String sql = """
+            SELECT
+                co.customer_order_id,
+                co.customer_email,
+                co.order_status,
+                co.width_mm,
+                co.height_mm,
+                co.length_mm,
+                co.order_price,
+                co.created_at,
+                rt.roof_type_id,
+                rt.roof_type_name,
+                rt.roof_type_deg,
+                rt.roof_type_price,
+                s.shed_id,
+                s.shed_width_mm,
+                s.shed_length_mm
+            FROM customer_order co
+            JOIN roof_type rt ON co.roof_type_id = rt.roof_type_id
+            LEFT JOIN shed s ON co.shed_id = s.shed_id
+            WHERE co.customer_order_id = ?
+            """;
 
-        try(Connection connection = ConnectionPool.getInstance().getConnection()) {
-            PreparedStatement ps = connection.prepareStatement(sql);
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setInt(1, orderId);
 
-            try(ResultSet rs = ps.executeQuery()) {
+            try (ResultSet rs = ps.executeQuery()) {
 
                 if (!rs.next()) return null;
 
-                String email = rs.getString("user_email");
+                String email = rs.getString("customer_email");
                 String status = rs.getString("order_status");
 
                 RoofType roofType = new RoofType(
@@ -206,48 +223,61 @@ public class OrderMapper {
                         rs.getInt("shed_length_mm")
                 );
 
-                if (shed.getId() == 0 || shed.getWidthMM() == 0 || shed.getLengthMM() == 0) {
-                    return new Order(orderId, email, status, roofType, widthMM, heightMM, lengthMM, createdAt, materials, comments, totalPrice);
-                } else {
-                    return new OrderWithShed(orderId, email, status, roofType, widthMM, heightMM, lengthMM, createdAt, materials, comments, totalPrice, shed);
+                if (shed.getId() == 0) {
+                    return new Order(orderId, email, status, roofType,
+                            widthMM, heightMM, lengthMM, createdAt, materials, comments, totalPrice);
                 }
+
+                return new OrderWithShed(orderId, email, status, roofType,
+                        widthMM, heightMM, lengthMM, createdAt, materials, comments, totalPrice, shed);
             }
 
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+            throw new DatabaseException("Could not connect to DB", e.getMessage());
         }
     }
 
     public static void changeOrderStatus(int orderId, String orderStatus) throws DatabaseException {
 
-        String sql = "UPDATE public.user_order SET order_status = ? WHERE user_order_id = ?";
+        String sql = """
+            UPDATE customer_order
+            SET order_status = ?
+            WHERE customer_order_id = ?
+            """;
 
-        try(Connection connection = ConnectionPool.getInstance().getConnection()) {
-            PreparedStatement stmt = connection.prepareStatement(sql);
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
 
             stmt.setString(1, orderStatus);
             stmt.setInt(2, orderId);
-
             stmt.executeUpdate();
+
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+            throw new DatabaseException("Could not connect to DB", e.getMessage());
         }
     }
 
-    public static void changeOrderPrice(int orderId, BigDecimal orderPrice, Admin admin, String comment) throws DatabaseException{
+    public static void changeOrderPrice(int orderId, BigDecimal orderPrice, Admin admin, String comment)
+            throws DatabaseException {
 
-        String updateSql = "UPDATE public.user_order  " +
-                           "SET order_price = ? " +
-                           "WHERE user_order_id = ?";
+        String updateSql = """
+            UPDATE customer_order
+            SET order_price = ?
+            WHERE customer_order_id = ?
+            """;
 
-        String insertSql = "INSERT INTO public.user_order_change (user_order_id, admin_email, admin_note) " +
-                           "VALUES (?, ?, ?)";
+        String insertSql = """
+            INSERT INTO customer_order_change
+            (customer_order_id, admin_email, admin_note)
+            VALUES (?, ?, ?)
+            """;
 
-        try(Connection connection = ConnectionPool.getInstance().getConnection()) {
+        try (Connection connection = ConnectionPool.getInstance().getConnection()) {
+
             connection.setAutoCommit(false);
 
-            try(PreparedStatement updateStmt = connection.prepareStatement(updateSql);
-                PreparedStatement insertStmt = connection.prepareStatement(insertSql)) {
+            try (PreparedStatement updateStmt = connection.prepareStatement(updateSql);
+                 PreparedStatement insertStmt = connection.prepareStatement(insertSql)) {
 
                 updateStmt.setBigDecimal(1, orderPrice);
                 updateStmt.setInt(2, orderId);
@@ -255,13 +285,14 @@ public class OrderMapper {
 
                 insertStmt.setInt(1, orderId);
                 insertStmt.setString(2, admin.getAdminEmail());
+
                 if (comment == null || comment.isBlank()) {
                     insertStmt.setNull(3, Types.VARCHAR);
                 } else {
                     insertStmt.setString(3, comment);
                 }
-                insertStmt.executeUpdate();
 
+                insertStmt.executeUpdate();
                 connection.commit();
 
             } catch (SQLException e) {
@@ -272,115 +303,69 @@ public class OrderMapper {
             }
 
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+            throw new DatabaseException("Could not connect to DB", e.getMessage());
         }
     }
 
     public static List<Order> getAllOrders() throws DatabaseException {
-
-        List<Order> orders = new ArrayList<>();
-
-        String sql = "SELECT " +
-                     "uo.user_order_id, uo.user_email, uo.order_status, uo.width_mm, uo.height_mm, uo.length_mm, uo.order_price, uo.created_at, " +
-                     "rt.roof_type_id, rt.roof_type_name, rt.roof_type_deg, rt.roof_type_price, " +
-                     "s.shed_id, s.shed_width_mm, s.shed_length_mm " +
-                     "FROM public.user_order uo " +
-                     "JOIN roof_type rt ON uo.roof_type_id = rt.roof_type_id " +
-                     "LEFT JOIN shed s ON uo.shed_id = s.shed_id";
-
-        try(Connection connection = ConnectionPool.getInstance().getConnection()) {
-            PreparedStatement stmt = connection.prepareStatement(sql);
-
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-
-                int orderID = rs.getInt("user_order_id");
-                String email = rs.getString("user_email");
-                String status = rs.getString("order_status");
-
-                RoofType roofType = new RoofType(
-                        rs.getInt("roof_type_id"),
-                        rs.getString("roof_type_name"),
-                        rs.getInt("roof_type_deg"),
-                        rs.getBigDecimal("roof_type_price")
-                );
-
-                int widthMM = rs.getInt("width_mm");
-                int heightMM = rs.getInt("height_mm");
-                int lengthMM = rs.getInt("length_mm");
-                Timestamp createdAt = rs.getTimestamp("created_at");
-                BigDecimal totalPrice = rs.getBigDecimal("order_price");
-
-                List<Material> materials = MaterialMapper.getAllMaterialsFromOrder(orderID);
-                List<Comment> comments = getAllCommentsFromOrder(orderID);
-
-                Shed shed = new Shed(
-                        rs.getInt("shed_id"),
-                        rs.getInt("shed_width_mm"),
-                        rs.getInt("shed_length_mm")
-                );
-
-                if (shed.getId() == 0 || shed.getWidthMM() == 0 || shed.getLengthMM() == 0) {
-                    orders.add(new Order(orderID, email, status, roofType, widthMM, heightMM, lengthMM, createdAt, materials, comments, totalPrice));
-                } else {
-                    orders.add(new OrderWithShed(orderID, email, status, roofType, widthMM, heightMM, lengthMM, createdAt, materials, comments, totalPrice, shed));
-                }
-            }
-
-            return orders;
-
-        } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
-        }
+        return getOrdersByStatus("%");
     }
 
     public static List<Comment> getAllCommentsFromOrder(int orderID) throws DatabaseException {
 
         List<Comment> comments = new ArrayList<>();
 
-        String sql = "SELECT user_order_change_id, user_order_id, admin_email, admin_note, created_at " +
-                     "FROM public.user_order_change " +
-                     "WHERE user_order_id = ? " +
-                     "ORDER BY created_at";
+        String sql = """
+            SELECT
+                customer_order_change_id,
+                customer_order_id,
+                admin_email,
+                admin_note,
+                created_at
+            FROM customer_order_change
+            WHERE customer_order_id = ?
+            ORDER BY created_at
+            """;
 
-        try(Connection connection = ConnectionPool.getInstance().getConnection()) {
-
-            PreparedStatement stmt = connection.prepareStatement(sql);
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
 
             stmt.setInt(1, orderID);
 
-            ResultSet rs = stmt.executeQuery();
-
-            while (rs.next()) {
-
-                int orderChangeId = rs.getInt("user_order_change_id");
-                String whichAdminMadeThisComment = rs.getString("admin_email");
-                String note = rs.getString("admin_note");
-                Timestamp createdAt = rs.getTimestamp("created_at");
-
-                comments.add(new Comment(orderChangeId, orderID, note, createdAt, whichAdminMadeThisComment));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    comments.add(new Comment(
+                            rs.getInt("customer_order_change_id"),
+                            orderID,
+                            rs.getString("admin_note"),
+                            rs.getTimestamp("created_at"),
+                            rs.getString("admin_email")
+                    ));
+                }
             }
 
             return comments;
+
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+            throw new DatabaseException("Could not connect to DB", e.getMessage());
         }
     }
 
-    public static RoofType getRoofTypeBySlopeDegrees(Integer roofDeg) throws DatabaseException{
+    public static RoofType getRoofTypeBySlopeDegrees(Integer roofDeg) throws DatabaseException {
 
-        String sql = "SELECT roof_type_id, roof_type_name, roof_type_deg, roof_type_price FROM public.roof_type WHERE roof_type_deg = ?";
+        String sql = """
+            SELECT roof_type_id, roof_type_name, roof_type_deg, roof_type_price
+            FROM roof_type
+            WHERE roof_type_deg = ?
+            """;
 
-        try(Connection connection = ConnectionPool.getInstance().getConnection()) {
-            PreparedStatement ps = connection.prepareStatement(sql);
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
 
             ps.setInt(1, roofDeg);
 
-            try(ResultSet rs = ps.executeQuery()) {
-
+            try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-
                     return new RoofType(
                             rs.getInt("roof_type_id"),
                             rs.getString("roof_type_name"),
@@ -390,10 +375,10 @@ public class OrderMapper {
                 }
             }
 
-            throw new DatabaseException("No roofType with the slope = " + roofDeg);
+            throw new DatabaseException("No roofType with slope = " + roofDeg);
 
         } catch (SQLException e) {
-            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+            throw new DatabaseException("Could not connect to DB", e.getMessage());
         }
     }
 }

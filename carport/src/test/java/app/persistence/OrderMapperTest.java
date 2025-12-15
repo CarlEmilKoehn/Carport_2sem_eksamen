@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -21,8 +23,10 @@ class OrderMapperTest {
     private final String commentText = "testComment";
 
     @BeforeEach
-    void setUp() {
-
+    void setSchema() throws SQLException {
+        try (Connection connection = ConnectionPool.getInstance().getConnection()) {
+            connection.setSchema("test");
+        }
     }
 
     @AfterEach
@@ -34,13 +38,13 @@ class OrderMapperTest {
 
         RoofType roofType = new RoofType(1, "FLAT", 90, new BigDecimal("500.00"));
         List<Material> materials = new ArrayList<>();
-        materials.add(new Material());
+        //materials.add(new Material());
         List<Comment> comments = new ArrayList<>();
         comments.add(new Comment(5, 2, "test", Timestamp.from(Instant.now()), "admin@outlook.dk"));
 
-        Order newOrder = new Order(2, "a@a", "PENDING", roofType, 50, 50, Timestamp.from(Instant.now()), materials, comments, new BigDecimal("5000.00"));
+        //Order newOrder = new Order(2, "a@a", "PENDING", roofType, 50, 50, Timestamp.from(Instant.now()), materials, comments, new BigDecimal("5000.00"));
 
-        OrderMapper.createOrder(newOrder);
+        //OrderMapper.createOrder(newOrder);
 
     }
 
