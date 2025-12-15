@@ -6,7 +6,7 @@
     <title>Fog - Holder i længden</title>
 
     <link rel="icon" type="image/x-icon" th:href="@{/images/favicon.ico}">
-    <link rel="stylesheet" th:href="@{/css/carportFlatRoof.css}">
+    <link rel="stylesheet" th:href="@{/css/carportSlopedRoof.css}">
 </head>
 
 <body>
@@ -34,7 +34,7 @@
         <article class="card">
 
             <h2>Carport med fladt tag</h2>
-            <form th:action="@{/carportFlatRoof}" method="post" class="carportForm">
+            <form th:action="@{/carportSlopedRoof}" method="post" class="carportForm">
 
                 <label>Carport bredde</label>
                 <select name="carportWidthMm" required>
@@ -65,6 +65,17 @@
                     <option value="6600" th:selected="${carportLengthMm == 6600}">660 cm</option>
                     <option value="7200" th:selected="${carportLengthMm == 7200}">720 cm</option>
                     <option value="7800" th:selected="${carportLengthMm == 7800}">780 cm</option>
+                </select>                <label>Taghældning</label>
+
+                <select name="roofSlopeDeg" required>
+                    <option value="">Vælg taghældning</option>
+                    <option value="15" th:selected="${roofSlopeDeg == 15}">15 grader</option>
+                    <option value="20" th:selected="${roofSlopeDeg == 20}">20 grader</option>
+                    <option value="25" th:selected="${roofSlopeDeg == 25}">25 grader</option>
+                    <option value="30" th:selected="${roofSlopeDeg == 30}">30 grader</option>
+                    <option value="35" th:selected="${roofSlopeDeg == 35}">35 grader</option>
+                    <option value="40" th:selected="${roofSlopeDeg == 40}">40 grader</option>
+                    <option value="45" th:selected="${roofSlopeDeg == 45}">45 grader</option>
                 </select>                <h3>Redskabsrum</h3>
 
                 <label class="shedCheckboxLabel">
@@ -108,7 +119,6 @@
             <input type="hidden" name="carportLengthMm" th:value="${carportLengthMm}">
             <input type="hidden" name="shedWidthMm" th:value="${shedWidthMm}">
             <input type="hidden" name="shedLengthMm" th:value="${shedLengthMm}">
-            <input type="hidden" name="roofSlopeDeg" value="0">
 
 
             <h3>Kontaktoplysninger</h3>

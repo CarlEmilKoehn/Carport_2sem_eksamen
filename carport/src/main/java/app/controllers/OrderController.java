@@ -1,46 +1,166 @@
 package app.controllers;
 
-import app.entities.CarportSvg;
-import app.entities.Material;
-import app.entities.Svg;
+import app.entities.*;
+import app.exceptions.DatabaseException;
+import app.persistence.CustomerMapper;
+import app.persistence.OrderMapper;
+import app.services.CarportCalculatorService;
+import app.services.email.CarportMailService;
+import app.services.email.MailSender;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 
 import java.math.BigDecimal;
-import java.sql.Time;
-import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
+import java.util.Objects;
 
 public class OrderController {
 
-    public static void addRoutes(Javalin app) {
-
-        app.post("/carportFlatRoof", OrderController::showSvg);
+    public static void guardAgainstOrderEqualsNull(Order order) {
+        if (order == null) {
+            throw new IllegalStateException("Order is null");
+        }
     }
 
-    private static void showSvg(Context ctx) {
-        Locale.setDefault(Locale.US);
+    public static void addRoutes(Javalin app) {
 
-        int carportWidth = Integer.parseInt(ctx.formParam("carportWidthMm"));
-        int carportLength = Integer.parseInt(ctx.formParam("carportLengthMm"));
+        app.post("submitRequestForCarport", ctx -> {
 
-        int shedWidth = ctx.formParam("shedWidthMm").isEmpty()
-                ? 0
-                : Integer.parseInt(ctx.formParam("shedWidthMm"));
+            Order order = handleCreateOrder(ctx);
+            guardAgainstOrderEqualsNull(order);
 
-        int shedLength = ctx.formParam("shedLengthMm").isEmpty()
-                ? 0
-                : Integer.parseInt(ctx.formParam("shedLengthMm"));
+            boolean mailOK = handleRequestCarportEmail(order);
 
-        CarportSvg svg = new CarportSvg(
-                carportWidth,
-                carportLength,
-                shedWidth,
-                shedLength
-        );
+            if (mailOK) {
+                ctx.status(200).result("Order created: " + order.getId());
+            } else {
+                ctx.status(200).result("Order created: " + order.getId() + " (but email failed)");
+            }
+        });
 
-        ctx.attribute("svg", svg.toString());
-        ctx.render("carportFlatRoof.html");
+        //TODO
+        app.post("submitPricingForOrder", ctx -> {
+
+            Order order = ctx.attribute("order");
+
+            guardAgainstOrderEqualsNull(order);
+
+            boolean mailOK = handlePricingCarportEmail(order);
+
+            if (mailOK) {
+                ctx.status(200).result("Price given to order: " + order.getId());
+            } else {
+                ctx.status(200).result("Price given to order: " + order.getId() + " (but email failed)");
+            }
+        });
+
+        //TODO
+        app.post("submitPaymentForCarport", ctx -> {
+
+            Order order = ctx.attribute("payingForOrder");
+
+            guardAgainstOrderEqualsNull(order);
+
+            boolean mailOK = handlePaymentCarportEmail(order);
+
+            if (mailOK) {
+                ctx.status(200).result("Order paid: " + order.getId());
+            } else {
+                ctx.status(200).result("Order paid: " + order.getId() + " (but email failed)");
+            }
+        });
+    }
+
+    private static Order handleCreateOrder(Context ctx) {
+
+        Order order;
+
+        String firstname = ctx.formParam("firstname");
+        String lastname = ctx.formParam("lastname");
+        String address = ctx.formParam("address");
+        int postalCode = Integer.parseInt(Objects.requireNonNull(ctx.formParam("postalcode")));
+        String email = ctx.formParam("email");
+
+        String orderStatus = "PENDING";
+
+        int widthMM = Integer.parseInt(Objects.requireNonNull(ctx.formParam("carportWidth")));
+        int heightMM = 2200;
+        int lengthMM = Integer.parseInt(Objects.requireNonNull(ctx.formParam("carportLength")));
+
+        List<Material> materials = new ArrayList<>();
+        BigDecimal totalCost = BigDecimal.ZERO;
+
+        boolean hasShed = ctx.formParam("hasShed") != null;
+
+        try {
+            RoofType roofType = OrderMapper.getRoofTypeBySlopeDegrees(Integer.parseInt(Objects.requireNonNull(ctx.formParam("roofSlopeDeg"))));
+            CustomerMapper.registerCustomer(email, firstname, lastname, address, postalCode);
+
+            if (!hasShed) {
+                order = new Order(email, orderStatus, roofType, widthMM, heightMM, lengthMM, materials, null, totalCost);
+            } else {
+                int shedWidthMM = Integer.parseInt(Objects.requireNonNull(ctx.formParam("shedWidth")));
+                int shedLengthMM = Integer.parseInt(Objects.requireNonNull(ctx.formParam("shedLength")));
+                order = new OrderWithShed(email, orderStatus, roofType, widthMM, heightMM, lengthMM, materials, null, totalCost, new Shed(shedWidthMM, shedLengthMM));
+            }
+
+            CarportCalculatorService.calculate(order);
+
+            int orderID = OrderMapper.createOrder(order);
+            order.setId(orderID);
+
+            ctx.attribute("currentOrder", order);
+
+            return order;
+
+        } catch (NullPointerException | NumberFormatException e) {
+            ctx.status(400).result("Invalid form input (missing field or not a number).");
+            return null;
+
+        } catch (DatabaseException e) {
+            ctx.status(500).result(e.getMessage());
+            return null;
+        }
+    }
+
+    //TODO svgMarkup waiting for Carlus
+    private static boolean handleRequestCarportEmail(Order order) {
+
+        CarportMailService carportMailService = new CarportMailService(new MailSender());
+
+        try {
+            carportMailService.sendOrderReceived(order, null);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    //TODO svgMarkup waiting for Carlus
+    private static boolean handlePricingCarportEmail(Order order) {
+
+        CarportMailService carportMailService = new CarportMailService(new MailSender());
+
+        try {
+            carportMailService.sendPriceGiven(order);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    //TODO svgMarkup waiting for Carlus
+    private static boolean handlePaymentCarportEmail(Order order) {
+
+        CarportMailService carportMailService = new CarportMailService(new MailSender());
+
+        try {
+            carportMailService.sendOrderPaid(order, null);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+
     }
 }

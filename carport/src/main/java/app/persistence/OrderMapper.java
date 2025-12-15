@@ -2,6 +2,7 @@ package app.persistence;
 
 import app.entities.*;
 import app.exceptions.DatabaseException;
+import com.zaxxer.hikari.pool.HikariProxyResultSet;
 
 import javax.xml.crypto.Data;
 import java.math.BigDecimal;
@@ -34,8 +35,8 @@ public class OrderMapper {
                 orderStmt.setInt(3, order.getWidthMM());
                 orderStmt.setInt(4, order.getHeightMM());
                 orderStmt.setInt(5, order.getLengthMM());
-                orderStmt.setBigDecimal(5, order.getTotalPrice());
-                orderStmt.setInt(6, order.getRoofType().getId());
+                orderStmt.setBigDecimal(6, order.getTotalPrice());
+                orderStmt.setInt(7, order.getRoofType().getId());
 
                 Shed shed = null;
                 if (order instanceof OrderWithShed ows) {
@@ -43,9 +44,9 @@ public class OrderMapper {
                 }
 
                 if (shed != null) {
-                    orderStmt.setInt(7, shed.getId());
+                    orderStmt.setInt(8, shed.getId());
                 } else {
-                    orderStmt.setNull(7, Types.INTEGER);
+                    orderStmt.setNull(8, Types.INTEGER);
                 }
 
                 ResultSet rs = orderStmt.executeQuery();
@@ -107,8 +108,8 @@ public class OrderMapper {
                 "s.shed_id, s.shed_width_mm, s.shed_length_mm " +
                 "FROM public.user_order uo " +
                 "JOIN roof_type rt ON uo.roof_type_id = rt.roof_type_id " +
-                "LEFT JOIN shed s ON uo.shed_id = s.shed_id" +
-                "WHERE uo.order_id = ?";
+                "LEFT JOIN shed s ON uo.shed_id = s.shed_id " +
+                "WHERE uo.user_order_id = ?";
 
         try(Connection connection = ConnectionPool.getInstance().getConnection()) {
             PreparedStatement ps = connection.prepareStatement(sql);
@@ -116,6 +117,8 @@ public class OrderMapper {
             ps.setInt(1, orderId);
 
             try(ResultSet rs = ps.executeQuery()) {
+
+                if (!rs.next()) return null;
 
                 String email = rs.getString("user_email");
                 String status = rs.getString("order_status");
@@ -299,6 +302,35 @@ public class OrderMapper {
             }
 
             return comments;
+        } catch (SQLException e) {
+            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+        }
+    }
+
+    public static RoofType getRoofTypeBySlopeDegrees(Integer roofDeg) throws DatabaseException{
+
+        String sql = "SELECT roof_type_id, roof_type_name, roof_type_deg, roof_type_price FROM public.roof_type WHERE roof_type_deg = ?";
+
+        try(Connection connection = ConnectionPool.getInstance().getConnection()) {
+            PreparedStatement ps = connection.prepareStatement(sql);
+
+            ps.setInt(1, roofDeg);
+
+            try(ResultSet rs = ps.executeQuery()) {
+
+                if (rs.next()) {
+
+                    return new RoofType(
+                            rs.getInt("roof_type_id"),
+                            rs.getString("roof_type_name"),
+                            rs.getInt("roof_type_deg"),
+                            rs.getBigDecimal("roof_type_price")
+                    );
+                }
+            }
+
+            throw new DatabaseException("No roofType with the slope = " + roofDeg);
+
         } catch (SQLException e) {
             throw new DatabaseException("Could not connect to DB: ", e.getMessage());
         }

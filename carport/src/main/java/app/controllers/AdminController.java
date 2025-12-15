@@ -9,15 +9,15 @@ import io.javalin.Javalin;
 import io.javalin.http.Context;
 
 import java.math.BigDecimal;
-import java.util.List;
-
+import java.util.Objects;
 
 public class AdminController {
 
     public static void addRoutes(Javalin app) {
 
-        app.before("/admin", AdminController::handleGuard);
-        app.before("/admin/*", AdminController::handleGuard);
+        app.before("/admin/dashboard", AdminController::handleGuard);
+        app.before("/admin/ordre/*", AdminController::handleGuard);
+        app.before("/admin/logout", AdminController::handleGuard);
 
         app.get("/admin/login", ctx -> ctx.render("admin_login"));
         app.post("/admin/login", ctx -> handleLogin(ctx));
@@ -27,18 +27,30 @@ public class AdminController {
             ctx.render("admin_dashboard");
         });
 
-        app.get("/admin/ordre", ctx -> {
+        app.get("/admin/ordre/{orderId}", ctx -> {
 
-            ctx.attribute("order", OrderMapper.getOrderByOrderId());
+            int orderId = Integer.parseInt(ctx.pathParam("orderId"));
+
+            Order order = OrderMapper.getOrderByOrderId(orderId);
+
+            if (order == null) {
+                ctx.attribute("fejl", "Ordren blev ikke fundet");
+                ctx.redirect("/admin/dashboard");
+                return;
+            }
+
+            Admin admin = ctx.sessionAttribute("currentAdmin");
+
+            ctx.attribute("admin", admin);
+            ctx.attribute("order", order);
+
             ctx.render("admin_ordre");
         });
-
 
         app.get("/admin/logout", ctx -> handleLogout(ctx));
     }
 
     private static void handleGuard(Context ctx) {
-
         Admin admin = ctx.sessionAttribute("currentAdmin");
 
         if (admin == null) {
@@ -47,51 +59,42 @@ public class AdminController {
     }
 
     private static void handleLogin(Context ctx) {
-
         String email = ctx.formParam("admin_email");
         String password = ctx.formParam("admin_password");
 
         try {
             Admin admin = AdminMapper.login(email, password);
+
+            if (admin == null) {
+                ctx.attribute("fejl", "Forkert email eller adgangskode");
+                ctx.render("admin_login");
+                return;
+            }
+
             ctx.sessionAttribute("currentAdmin", admin);
             ctx.redirect("/admin/dashboard");
-
         } catch (DatabaseException e) {
-
             ctx.attribute("fejl", e);
             ctx.render("admin_login");
         }
     }
 
-    private static void showOrder(Context ctx) {
-
-    Admin admin = ctx.sessionAttribute("currentAdmin");
-
-
-
-    // Oliver: Vi skal lige hente ordre detaljerne fra ordremapper, ctx attribute ordre ordre
-
-        ctx.attribute("admin", admin);
-        ctx.attribute("OrderId", Order);
-        ctx.render("admin_ordre");
-    }
-
-    // Oliver: kald order mapper opdater pris og opret note/kommentar så de kan gemmes i vores db
     private static void setPrice(Context ctx) {
         Admin admin = ctx.sessionAttribute("currentAdmin");
 
         int orderId = Integer.parseInt(ctx.pathParam("orderId"));
-        BigDecimal totalPrice = BigDecimal.valueOf(Long.parseLong(ctx.formParam("price")));
+
+        BigDecimal totalPrice = BigDecimal.valueOf(Long.parseLong(Objects.requireNonNull(ctx.formParam("price"))));
         String comment = ctx.formParam("comment");
 
         try {
 
-            // Opdater ordre pris (ordreId, pris og connectionPool)
-            // Change mapperen skal oprette note/kommentar (ordreId, note, admin email, connectionPool)
+            OrderMapper.changeOrderPrice(orderId, totalPrice, admin, comment);
 
             ctx.attribute("succes", "Prisen er blevet nedsat. Der sendes en automatisk ordrebekræftigelse på mail til kunden.");
             ctx.redirect("/admin/dashboard");
-        } catch (NumberFormatException e) {
+
+        } catch (NumberFormatException | DatabaseException e) {
             ctx.attribute("fejl", "Ugyldig pris");
             ctx.redirect("/admin/ordre/" + orderId);
         }
