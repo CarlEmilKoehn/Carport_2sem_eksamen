@@ -14,30 +14,28 @@ public class CustomerMapper {
 
     public static Customer getCustomerByEmail(String email) throws DatabaseException {
 
-        Customer customer;
-
         String sql = "SELECT * FROM customer WHERE email = ?";
 
-        try (Connection connection = ConnectionPool.getInstance().getConnection()) {
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
 
-            PreparedStatement ps = connection.prepareStatement(sql);
             ps.setString(1, email);
-            ResultSet rs = ps.executeQuery();
 
-            if (rs.next()) {
-                String firstname = rs.getString("firstname");
-                String lastname = rs.getString("lastname");
-                String address = rs.getString("address");
-                int postalCode = rs.getInt("postal_code");
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String firstname = rs.getString("firstname");
+                    String lastname = rs.getString("lastname");
+                    String address = rs.getString("address");
+                    int postalCode = rs.getInt("postal_code");
 
-                return new Customer(email, firstname, lastname, address, postalCode);
+                    return new Customer(email, firstname, lastname, address, postalCode);
+                }
             }
 
             return null;
 
         } catch (SQLException e) {
             throw new DatabaseException("Fejl ved hentning af kunde.", "getCustomerByEmail failed for email=" + email + ": " + e.getMessage());
-
         }
     }
 
@@ -46,12 +44,12 @@ public class CustomerMapper {
         List<Customer> users = new ArrayList<>();
 
         String sql = "SELECT * FROM customer";
-        try(Connection connection = ConnectionPool.getInstance().getConnection()) {
 
-            PreparedStatement stmt = connection.prepareStatement(sql);
-            ResultSet rs = stmt.executeQuery();
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+             PreparedStatement stmt = connection.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
 
-            while(rs.next()) {
+            while (rs.next()) {
 
                 String email = rs.getString("email");
                 String firstname = rs.getString("firstname");
@@ -60,26 +58,38 @@ public class CustomerMapper {
                 int postalCode = rs.getInt("postal_code");
 
                 users.add(new Customer(email, firstname, lastname, address, postalCode));
-
             }
 
             return users;
+
         } catch (SQLException e) {
             throw new DatabaseException("Fejl ved hentning af kunder.", "getAllCustomers failed: " + e.getMessage());
         }
     }
 
     public static void registerCustomer(String email, String firstName, String lastName, String address, int postalCode) throws DatabaseException {
-        String sql = "INSERT INTO customer (email, firstname, lastname, address, postal_code) VALUES (?, ?, ?, ?, ?)";
 
-        try(Connection connection = ConnectionPool.getInstance().getConnection()) {
-            PreparedStatement ps = connection.prepareStatement(sql);
+        String sql = """
+            INSERT INTO customer (email, firstname, lastname, address, postal_code)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT (email) DO UPDATE SET
+                firstname = EXCLUDED.firstname,
+                lastname = EXCLUDED.lastname,
+                address = EXCLUDED.address,
+                postal_code = EXCLUDED.postal_code
+            """;
+
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
+
             ps.setString(1, email);
             ps.setString(2, firstName);
             ps.setString(3, lastName);
             ps.setString(4, address);
             ps.setInt(5, postalCode);
+
             ps.executeUpdate();
+
         } catch (SQLException e) {
             throw new DatabaseException("Kunne ikke oprette kunden.", "registerCustomer failed for email=" + email + ": " + e.getMessage());
         }
@@ -89,17 +99,17 @@ public class CustomerMapper {
 
         String sql = "SELECT 1 FROM customer WHERE email = ?";
 
-        try (Connection connection = ConnectionPool.getInstance().getConnection()) {
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql)) {
 
-            PreparedStatement ps = connection.prepareStatement(sql);
             ps.setString(1, email);
 
-            ResultSet rs = ps.executeQuery();
-            return rs.next();
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
 
         } catch (SQLException e) {
             throw new DatabaseException("Fejl ved opslag af email.", "isEmailInSystem failed for email = " + email + ": " + e.getMessage());
         }
     }
-
 }

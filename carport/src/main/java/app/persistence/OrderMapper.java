@@ -75,6 +75,12 @@ public class OrderMapper {
 
     public static int createOrder(Order order) throws DatabaseException {
 
+        String shedSql = """
+            INSERT INTO shed (shed_width_mm, shed_length_mm)
+            VALUES (?, ?)
+            RETURNING shed_id
+            """;
+
         String orderSql = """
             INSERT INTO customer_order
             (customer_email, order_status, width_mm, height_mm, length_mm, order_price, roof_type_id, shed_id)
@@ -92,6 +98,20 @@ public class OrderMapper {
 
             connection.setAutoCommit(false);
 
+            Integer shedId = null;
+
+            if (order instanceof OrderWithShed ows) {
+                try (PreparedStatement shedStmt = connection.prepareStatement(shedSql)) {
+                    shedStmt.setInt(1, ows.getShed().getWidthMM());
+                    shedStmt.setInt(2, ows.getShed().getLengthMM());
+
+                    ResultSet shedRs = shedStmt.executeQuery();
+                    if (shedRs.next()) {
+                        shedId = shedRs.getInt("shed_id");
+                    }
+                }
+            }
+
             try (PreparedStatement orderStmt = connection.prepareStatement(orderSql);
                  PreparedStatement materialStmt = connection.prepareStatement(materialSql)) {
 
@@ -103,14 +123,13 @@ public class OrderMapper {
                 orderStmt.setBigDecimal(6, order.getTotalPrice());
                 orderStmt.setInt(7, order.getRoofType().getId());
 
-                if (order instanceof OrderWithShed ows) {
-                    orderStmt.setInt(8, ows.getShed().getId());
+                if (shedId != null) {
+                    orderStmt.setInt(8, shedId);
                 } else {
                     orderStmt.setNull(8, Types.INTEGER);
                 }
 
                 ResultSet rs = orderStmt.executeQuery();
-
                 if (!rs.next()) {
                     throw new DatabaseException("Ordre blev ikke skabt", "Intet ID fundet");
                 }
@@ -119,7 +138,6 @@ public class OrderMapper {
 
                 if (order.getMaterials() != null) {
                     for (Material m : order.getMaterials()) {
-
                         materialStmt.setInt(1, orderId);
                         materialStmt.setInt(2, m.getProductId());
                         materialStmt.setInt(3, m.getQuantity());

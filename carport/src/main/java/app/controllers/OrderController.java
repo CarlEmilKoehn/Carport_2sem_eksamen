@@ -43,11 +43,13 @@ public class OrderController {
 
             } catch (IllegalArgumentException | DatabaseException e) {
                 ctx.sessionAttribute("flashError", e.getMessage());
+                System.out.println(e.getMessage());
                 ctx.redirect("/");
 
             } catch (Exception e) {
                 e.printStackTrace();
                 ctx.sessionAttribute("flashError", "Der skete en uventet fejl. Prøv igen.");
+                System.out.println(e.getMessage());
                 ctx.redirect("/");
             }
         });
@@ -94,6 +96,7 @@ public class OrderController {
         try {
             return Integer.parseInt(ctx.pathParam("orderId"));
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             throw new IllegalArgumentException("Ugyldigt orderId i URL.");
         }
     }
@@ -101,12 +104,12 @@ public class OrderController {
     private static Order createOrderFromForm(Context ctx) throws DatabaseException {
 
         String firstname = require(ctx.formParam("firstname"), "Firstname mangler.");
-        String lastname  = require(ctx.formParam("lastname"), "Lastname mangler.");
-        String address   = require(ctx.formParam("address"), "Adresse mangler.");
-        int postalCode   = parseInt(require(ctx.formParam("postalcode"), "Postnr mangler."), "Ugyldigt postnr.");
-        String email     = require(ctx.formParam("email"), "Email mangler.");
+        String lastname = require(ctx.formParam("lastname"), "Lastname mangler.");
+        String address = require(ctx.formParam("address"), "Adresse mangler.");
+        int postalCode = parseInt(require(ctx.formParam("postalcode"), "Postnr mangler."), "Ugyldigt postnr.");
+        String email = require(ctx.formParam("email"), "Email mangler.");
 
-        int widthMM  = parseInt(require(ctx.formParam("carportWidthMm"), "Bredde mangler."), "Ugyldig bredde.");
+        int widthMM = parseInt(require(ctx.formParam("carportWidthMm"), "Bredde mangler."), "Ugyldig bredde.");
         int lengthMM = parseInt(require(ctx.formParam("carportLengthMm"), "Længde mangler."), "Ugyldig længde.");
 
         int slopeDeg = parseInt(require(ctx.formParam("roofSlopeDeg"), "Taghældning mangler."), "Ugyldig taghældning.");
@@ -146,6 +149,7 @@ public class OrderController {
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException e) {
+            System.out.println(e.getMessage());
             throw new IllegalArgumentException(messageIfBad);
         }
     }
@@ -156,6 +160,7 @@ public class OrderController {
             mailService.sendOrderReceived(order);
             return true;
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             e.printStackTrace();
             return false;
         }
