@@ -17,17 +17,13 @@ public class CarportMailService {
         this.templates = new EmailTemplateBuilder();
     }
 
-    public void sendOrderReceived(Order order, String svgMarkup) throws Exception {
+    public void sendOrderReceived(Order order) throws Exception {
         String body = templates.buildOrderReceivedText(order);
-
-        MimeBodyPart svgAttachment = mailSender.createAttachment("carport.svg", "image/svg+xml",
-                        svgMarkup.getBytes(StandardCharsets.UTF_8));
 
         mailSender.sendEmail(
                 order.getEmail(),
                 "Tak for din ordre #" + order.getId(),
-                body,
-                List.of(svgAttachment)
+                body
         );
     }
 
@@ -41,10 +37,9 @@ public class CarportMailService {
         );
     }
 
-    public void sendOrderPaid(Order order, String svgMarkup) throws Exception {
+    public void sendOrderPaid(Order order) throws Exception {
         String body = templates.buildOrderPaidText(order);
 
-        MimeBodyPart svgAttachment = mailSender.createAttachment("carport.svg", "image/svg+xml", svgMarkup.getBytes(StandardCharsets.UTF_8));
         StringBuilder materialListBuilder = new StringBuilder();
         materialListBuilder.append("Styklisten for din ordre:\n\n");
 
@@ -63,7 +58,7 @@ public class CarportMailService {
                 order.getEmail(),
                 "Kvittering for dit køb - ordre #" + order.getId(),
                 body,
-                List.of(svgAttachment, materialListAttachment)
+                List.of(materialListAttachment)
         );
     }
 }

@@ -10,6 +10,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import app.exceptions.DatabaseException;
 import org.junit.jupiter.api.*;
 
+import javax.xml.crypto.Data;
+
 public class AdminMapperTest {
 
     private static final String TEST_ADMIN_EMAIL = "admin@test.com";
@@ -70,7 +72,6 @@ public class AdminMapperTest {
     }
 
     @Test
-
     @DisplayName("Test login med ugyldigt password")
     void testLoginFejl() throws DatabaseException {
         Admin admin = new Admin(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD, TEST_ADMIN_FIRSTNAME, TEST_ADMIN_LASTNAME);
@@ -80,6 +81,7 @@ public class AdminMapperTest {
             AdminMapper.login(TEST_ADMIN_EMAIL, "Forkert adgangskode");
         });
     }
+
     @Test
     @DisplayName("Test hentning af alle admins")
     void testHentAlleAdmins() throws DatabaseException {
@@ -107,15 +109,15 @@ public class AdminMapperTest {
         Admin admin = new Admin(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD, TEST_ADMIN_FIRSTNAME, TEST_ADMIN_LASTNAME);
         AdminMapper.createAdmin(admin);
 
-      admin.setAdminPassword("nytPassword123");
-      admin.setAdminFirstname("Nyt");
-      admin.setAdminLastname("Navn");
-      AdminMapper.updateAdmin(admin);
+        admin.setAdminPassword("nytPassword123");
+        admin.setAdminFirstname("Nyt");
+        admin.setAdminLastname("Navn");
+        AdminMapper.updateAdmin(admin);
 
-      Admin opdateretAdmin = AdminMapper.getAdminByEmail(TEST_ADMIN_EMAIL);
-      assertEquals("Nyt", opdateretAdmin.getAdminFirstname());
-      assertEquals("Navn", opdateretAdmin.getAdminLastname());
-}
+        Admin opdateretAdmin = AdminMapper.getAdminByEmail(TEST_ADMIN_EMAIL);
+        assertEquals("Nyt", opdateretAdmin.getAdminFirstname());
+        assertEquals("Navn", opdateretAdmin.getAdminLastname());
+    }
 
 @Test
 @DisplayName("Test sletning af admin")
@@ -133,9 +135,10 @@ void testSletAdmin() throws DatabaseException {
 @Test
 @DisplayName("Admin findes ikke.")
 void testGetAdminMedUgyldigEmail() {
-    assertThrows(DatabaseException.class, () -> {
-        AdminMapper.getAdminByEmail("Ugyldig email");
-    });
+
+        assertThrows(DatabaseException.class, () -> {
+            AdminMapper.getAdminByEmail("Ugyldig email");
+        });
     }
 
     @AfterAll

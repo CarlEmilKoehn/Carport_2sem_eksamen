@@ -157,7 +157,7 @@ public class OrderController {
     private static boolean sendOrderReceivedEmail(Order order) {
         CarportMailService mailService = new CarportMailService(new MailSender());
         try {
-            mailService.sendOrderReceived(order, "");
+            mailService.sendOrderReceived(order);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -168,7 +168,7 @@ public class OrderController {
     private static boolean sendOrderPaidEmail(Order order) {
         CarportMailService mailService = new CarportMailService(new MailSender());
         try {
-            mailService.sendOrderPaid(order, "");
+            mailService.sendOrderPaid(order);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
