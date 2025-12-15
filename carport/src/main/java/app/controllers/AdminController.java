@@ -27,17 +27,27 @@ public class AdminController {
         app.post("/admin/login", AdminController::handleLogin);
 
         app.get("/admin/dashboard", ctx -> {
-            String status = ctx.queryParam("status");
+            try {
+                String status = ctx.queryParam("status");
 
-            List<Order> orders = (status == null || status.isBlank())
-                    ? OrderMapper.getAllOrders()
-                    : OrderMapper.getOrdersByStatus(status);
+                List<Order> orders = (status == null || status.isBlank())
+                        ? OrderMapper.getAllOrders()
+                        : OrderMapper.getOrdersByStatus(status);
 
-            pullFlash(ctx);
+                pullFlash(ctx);
 
-            ctx.attribute("allOrders", orders);
-            ctx.attribute("selectedStatus", status == null ? "ALL" : status.toUpperCase());
-            ctx.render("admin_dashboard");
+                ctx.attribute("allOrders", orders);
+                ctx.attribute("selectedStatus", status == null ? "ALL" : status.toUpperCase());
+                ctx.render("admin_dashboard");
+
+            } catch (DatabaseException e) {
+                ctx.sessionAttribute("flashError", "DB-fejl: " + e.getMessage());
+                ctx.redirect("/admin/login");
+            } catch (Exception e) {
+                e.printStackTrace();
+                ctx.sessionAttribute("flashError", "Uventet fejl ved dashboard.");
+                ctx.redirect("/admin/login");
+            }
         });
 
         app.get("/admin/ordre/{orderId}", ctx -> {
@@ -72,8 +82,8 @@ public class AdminController {
                 ctx.sessionAttribute("flashError", "DB-fejl: " + e.getMessage());
                 ctx.redirect("/admin/dashboard");
             } catch (Exception e) {
-
-                ctx.sessionAttribute("flashError", "Fejl ved visning af ordre: " + e.getMessage());
+                e.printStackTrace();
+                ctx.sessionAttribute("flashError", "Fejl ved visning af ordre.");
                 ctx.redirect("/admin/dashboard");
             }
         });
@@ -81,17 +91,50 @@ public class AdminController {
         app.post("/admin/ordre/{orderId}/price", ctx -> {
 
             Admin admin = ctx.sessionAttribute("currentAdmin");
-            int orderId = Integer.parseInt(ctx.pathParam("orderId"));
+
+            int orderId;
+            try {
+                orderId = Integer.parseInt(ctx.pathParam("orderId"));
+            } catch (NumberFormatException e) {
+                ctx.sessionAttribute("flashError", "Ugyldigt ordre-id");
+                ctx.redirect("/admin/dashboard");
+                return;
+            }
 
             try {
-                String priceParam = Objects.requireNonNull(ctx.formParam("price"));
-                BigDecimal newPrice = new BigDecimal(priceParam).setScale(2, RoundingMode.HALF_UP);
+                if (admin == null) {
+                    ctx.sessionAttribute("flashError", "Du er logget ud. Log ind igen.");
+                    ctx.redirect("/admin/login");
+                    return;
+                }
+
+                String priceParam = Objects.requireNonNull(ctx.formParam("price"), "Pris mangler");
+                if (priceParam.isBlank()) {
+                    ctx.sessionAttribute("flashError", "Pris mangler");
+                    ctx.redirect("/admin/ordre/" + orderId);
+                    return;
+                }
+
+                BigDecimal newPrice;
+                try {
+                    newPrice = new BigDecimal(priceParam).setScale(2, RoundingMode.HALF_UP);
+                } catch (NumberFormatException ex) {
+                    ctx.sessionAttribute("flashError", "Ugyldig pris (skal være et tal).");
+                    ctx.redirect("/admin/ordre/" + orderId);
+                    return;
+                }
+
                 String comment = ctx.formParam("comment");
 
                 OrderMapper.changeOrderPrice(orderId, newPrice, admin, comment);
                 OrderMapper.changeOrderStatus(orderId, "ADJUSTED");
 
                 Order order = OrderMapper.getOrderByOrderId(orderId);
+                if (order == null) {
+                    ctx.sessionAttribute("flashError", "Ordren blev ikke fundet (efter opdatering).");
+                    ctx.redirect("/admin/dashboard");
+                    return;
+                }
 
                 CarportMailService mailService = new CarportMailService(new MailSender());
                 mailService.sendPriceGiven(order);
@@ -99,12 +142,15 @@ public class AdminController {
                 ctx.sessionAttribute("flashSuccess", "Pris gemt, status sat til ADJUSTED og mail sendt.");
                 ctx.redirect("/admin/ordre/" + orderId);
 
+            } catch (DatabaseException e) {
+                ctx.sessionAttribute("flashError", "DB-fejl: " + e.getMessage());
+                ctx.redirect("/admin/ordre/" + orderId);
             } catch (Exception e) {
-                ctx.sessionAttribute("flashError", "Kunne ikke gemme/sende mail: " + e.getMessage());
+                e.printStackTrace();
+                ctx.sessionAttribute("flashError", "Kunne ikke gemme/sende mail.");
                 ctx.redirect("/admin/ordre/" + orderId);
             }
         });
-
 
         app.get("/admin/logout", AdminController::handleLogout);
     }

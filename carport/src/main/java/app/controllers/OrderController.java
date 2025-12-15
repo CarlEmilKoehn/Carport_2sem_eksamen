@@ -13,41 +13,55 @@ import io.javalin.http.Context;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class OrderController {
 
     public static void addRoutes(Javalin app) {
 
         app.post("/submitRequestForCarport", ctx -> {
-            Order order = handleCreateOrder(ctx);
-            guardAgainstOrderEqualsNull(order);
+            try {
+                Order order = createOrderFromForm(ctx);
+                int orderId = OrderMapper.createOrder(order);
+                order.setId(orderId);
 
-            boolean mailOK = handleRequestCarportEmail(order);
+                boolean mailOK = sendOrderReceivedEmail(order);
 
-            if (mailOK) {
-                ctx.sessionAttribute("flashSuccess", "Ordre oprettet og bekræftelse sendt.");
-            } else {
-                ctx.sessionAttribute("flashError", "Ordre oprettet, men mail kunne ikke sendes.");
+                if (mailOK) {
+                    ctx.sessionAttribute("flashSuccess", "Ordre oprettet og bekræftelse sendt.");
+                } else {
+                    ctx.sessionAttribute("flashError", "Ordre oprettet, men mail kunne ikke sendes.");
+                }
+
+                ctx.sessionAttribute("currentOrderId", orderId);
+                ctx.redirect("/");
+
+            } catch (IllegalArgumentException | DatabaseException e) {
+                ctx.sessionAttribute("flashError", e.getMessage());
+                ctx.redirect("/");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                ctx.sessionAttribute("flashError", "Der skete en uventet fejl. Prøv igen.");
+                ctx.redirect("/");
             }
-
-            ctx.redirect("/");
         });
 
         app.post("/order/{orderId}/paid", ctx -> {
-            int orderId = parseOrderId(ctx);
-
             try {
-                OrderMapper.changeOrderStatus(orderId, "ACCEPTED");
+                int orderId = parseOrderId(ctx);
 
                 Order order = OrderMapper.getOrderByOrderId(orderId);
-                guardAgainstOrderEqualsNull(order);
+                if (order == null) {
+                    throw new IllegalArgumentException("Ordren findes ikke.");
+                }
+
+                OrderMapper.changeOrderStatus(orderId, "ACCEPTED");
 
                 if (order.getMaterials() == null) {
                     order.setMaterials(new ArrayList<>());
                 }
 
-                boolean mailOK = handlePaymentCarportEmail(order);
+                boolean mailOK = sendOrderPaidEmail(order);
 
                 if (mailOK) {
                     ctx.sessionAttribute("flashSuccess", "Betaling registreret og kvittering sendt.");
@@ -57,8 +71,17 @@ public class OrderController {
 
                 ctx.redirect("/");
 
+            } catch (IllegalArgumentException e) {
+                ctx.sessionAttribute("flashError", e.getMessage());
+                ctx.redirect("/");
+
             } catch (DatabaseException e) {
-                ctx.sessionAttribute("flashError", "DB-fejl: " + e.getMessage());
+                ctx.sessionAttribute("flashError", e.getMessage());
+                ctx.redirect("/");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                ctx.sessionAttribute("flashError", "Der skete en uventet fejl. Prøv igen.");
                 ctx.redirect("/");
             }
         });
@@ -67,37 +90,28 @@ public class OrderController {
     private static int parseOrderId(Context ctx) {
         try {
             return Integer.parseInt(ctx.pathParam("orderId"));
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Ugyldigt orderId i URL");
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Ugyldigt orderId i URL.");
         }
     }
 
-    private static void guardAgainstOrderEqualsNull(Order order) {
-        if (order == null) {
-            throw new IllegalStateException("Order is null");
-        }
-    }
-
-    private static Order handleCreateOrder(Context ctx) {
-
+    private static Order createOrderFromForm(Context ctx) throws DatabaseException {
         try {
-            // Kunde-data
-            String firstname = Objects.requireNonNull(ctx.formParam("firstname"));
-            String lastname  = Objects.requireNonNull(ctx.formParam("lastname"));
-            String address   = Objects.requireNonNull(ctx.formParam("address"));
-            int postalCode   = Integer.parseInt(Objects.requireNonNull(ctx.formParam("postalcode")));
-            String email     = Objects.requireNonNull(ctx.formParam("email"));
+            String firstname = require(ctx.formParam("firstname"), "Firstname mangler.");
+            String lastname  = require(ctx.formParam("lastname"), "Lastname mangler.");
+            String address   = require(ctx.formParam("address"), "Adresse mangler.");
+            int postalCode   = parseInt(require(ctx.formParam("postalcode"), "Postnr mangler."), "Ugyldigt postnr.");
+            String email     = require(ctx.formParam("email"), "Email mangler.");
 
             String orderStatus = "PENDING";
-            int widthMM  = Integer.parseInt(Objects.requireNonNull(ctx.formParam("carportWidth")));
+            int widthMM  = parseInt(require(ctx.formParam("carportWidth"), "Bredde mangler."), "Ugyldig bredde.");
             int heightMM = 2200;
-            int lengthMM = Integer.parseInt(Objects.requireNonNull(ctx.formParam("carportLength")));
+            int lengthMM = parseInt(require(ctx.formParam("carportLength"), "Længde mangler."), "Ugyldig længde.");
 
             boolean hasShed = ctx.formParam("hasShed") != null;
 
-            RoofType roofType = OrderMapper.getRoofTypeBySlopeDegrees(
-                    Integer.parseInt(Objects.requireNonNull(ctx.formParam("roofSlopeDeg")))
-            );
+            int slopeDeg = parseInt(require(ctx.formParam("roofSlopeDeg"), "Taghældning mangler."), "Ugyldig taghældning.");
+            RoofType roofType = OrderMapper.getRoofTypeBySlopeDegrees(slopeDeg);
 
             CustomerMapper.registerCustomer(email, firstname, lastname, address, postalCode);
 
@@ -108,8 +122,8 @@ public class OrderController {
             if (!hasShed) {
                 order = new Order(email, orderStatus, roofType, widthMM, heightMM, lengthMM, materials, null, totalCost);
             } else {
-                int shedWidthMM  = Integer.parseInt(Objects.requireNonNull(ctx.formParam("shedWidth")));
-                int shedLengthMM = Integer.parseInt(Objects.requireNonNull(ctx.formParam("shedLength")));
+                int shedWidthMM  = parseInt(require(ctx.formParam("shedWidth"), "Skur bredde mangler."), "Ugyldig skur bredde.");
+                int shedLengthMM = parseInt(require(ctx.formParam("shedLength"), "Skur længde mangler."), "Ugyldig skur længde.");
                 order = new OrderWithShed(
                         email, orderStatus, roofType, widthMM, heightMM, lengthMM,
                         materials, null, totalCost,
@@ -118,28 +132,30 @@ public class OrderController {
             }
 
             CarportCalculatorService.calculate(order);
-
-            int orderID = OrderMapper.createOrder(order);
-            order.setId(orderID);
-
-            ctx.sessionAttribute("currentOrderId", orderID);
-
             return order;
 
-        } catch (NumberFormatException | NullPointerException e) {
-            ctx.status(400).result("Invalid form input (missing field or not a number).");
-            return null;
-
-        } catch (DatabaseException e) {
-            ctx.status(500).result("DB-fejl: " + e.getMessage());
-            return null;
+        } catch (NullPointerException e) {
+            throw new IllegalArgumentException("Manglende felter i formularen.");
         }
     }
 
-    // TODO: svgMarkup når I har det. Indtil da: send uden vedhæftning.
-    private static boolean handleRequestCarportEmail(Order order) {
-        CarportMailService mailService = new CarportMailService(new MailSender());
+    private static String require(String value, String messageIfMissing) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(messageIfMissing);
+        }
+        return value;
+    }
 
+    private static int parseInt(String value, String messageIfBad) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(messageIfBad);
+        }
+    }
+
+    private static boolean sendOrderReceivedEmail(Order order) {
+        CarportMailService mailService = new CarportMailService(new MailSender());
         try {
             mailService.sendOrderReceived(order, "");
             return true;
@@ -149,11 +165,10 @@ public class OrderController {
         }
     }
 
-    // TODO: svgMarkup når I har det. Indtil da: send uden vedhæftning.
-    private static boolean handlePaymentCarportEmail(Order order) {
+    private static boolean sendOrderPaidEmail(Order order) {
         CarportMailService mailService = new CarportMailService(new MailSender());
         try {
-            mailService.sendOrderPaid(order, ""); // tom svg string i stedet for null
+            mailService.sendOrderPaid(order, "");
             return true;
         } catch (Exception e) {
             e.printStackTrace();
