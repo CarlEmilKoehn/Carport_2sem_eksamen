@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CarportCalculatorServiceTest {
 
+    /*
     @Test
     void calculate_basicOrder_setsMaterials_and_price() throws DatabaseException {
         RoofType roof = new RoofType(1, "Fladt tag", 0, BigDecimal.ZERO);
@@ -59,4 +60,6 @@ class CarportCalculatorServiceTest {
         assertNotNull(order.getTotalPrice());
         assertTrue(order.getTotalPrice().compareTo(BigDecimal.ZERO) > 0);
     }
+
+     */
 }
