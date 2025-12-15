@@ -9,6 +9,7 @@ import io.javalin.Javalin;
 import io.javalin.http.Context;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Objects;
 
@@ -21,7 +22,7 @@ public class AdminController {
         app.before("/admin/logout", AdminController::handleGuard);
 
         app.get("/admin/login", ctx -> ctx.render("admin_login"));
-        app.post("/admin/login", ctx -> handleLogin(ctx));
+        app.post("/admin/login", AdminController::handleLogin);
 
         app.get("/admin/dashboard", ctx -> {
             String status = ctx.queryParam("status");
@@ -30,43 +31,61 @@ public class AdminController {
                     ? OrderMapper.getAllOrders()
                     : OrderMapper.getOrdersByStatus(status);
 
+            pullFlash(ctx);
 
             ctx.attribute("allOrders", orders);
-            ctx.attribute("selectedStatus", status == null ? "all" : status.toUpperCase());
+            ctx.attribute("selectedStatus", status == null ? "ALL" : status.toUpperCase());
             ctx.render("admin_dashboard");
         });
 
         app.get("/admin/ordre/{orderId}", ctx -> {
+            try {
+                int orderId = Integer.parseInt(ctx.pathParam("orderId"));
+                Order order = OrderMapper.getOrderByOrderId(orderId);
 
-            int orderId = Integer.parseInt(ctx.pathParam("orderId"));
+                if (order == null) {
+                    ctx.sessionAttribute("flashError", "Ordren blev ikke fundet");
+                    ctx.redirect("/admin/dashboard");
+                    return;
+                }
 
-            Order order = OrderMapper.getOrderByOrderId(orderId);
+                BigDecimal basePrice = order.getTotalPrice() != null ? order.getTotalPrice() : BigDecimal.ZERO;
 
-            if (order == null) {
-                ctx.attribute("fejl", "Ordren blev ikke fundet");
+                BigDecimal suggestedPrice = basePrice
+                        .multiply(BigDecimal.valueOf(1.40))
+                        .setScale(2, RoundingMode.HALF_UP);
+
+                pullFlash(ctx);
+
+                ctx.attribute("order", order);
+                ctx.attribute("basePrice", basePrice);
+                ctx.attribute("suggestedPrice", suggestedPrice);
+
+                ctx.render("showOrder");
+
+            } catch (NumberFormatException e) {
+                ctx.sessionAttribute("flashError", "Ugyldigt ordre-id");
                 ctx.redirect("/admin/dashboard");
-                return;
+            } catch (DatabaseException e) {
+                ctx.sessionAttribute("flashError", "DB-fejl: " + e.getMessage());
+                ctx.redirect("/admin/dashboard");
+            } catch (Exception e) {
+
+                ctx.sessionAttribute("flashError", "Fejl ved visning af ordre: " + e.getMessage());
+                ctx.redirect("/admin/dashboard");
             }
-
-            Admin admin = ctx.sessionAttribute("currentAdmin");
-
-            ctx.attribute("admin", admin);
-            ctx.attribute("order", order);
-
-            ctx.render("admin_ordre");
         });
 
         app.post("/admin/ordre/{orderId}/price", AdminController::setPrice);
 
-
-        app.get("/admin/logout", ctx -> handleLogout(ctx));
+        app.get("/admin/logout", AdminController::handleLogout);
     }
 
     private static void handleGuard(Context ctx) {
         Admin admin = ctx.sessionAttribute("currentAdmin");
-
         if (admin == null) {
             ctx.redirect("/admin/login");
+            ctx.skipRemainingHandlers();
         }
     }
 
@@ -85,30 +104,35 @@ public class AdminController {
 
             ctx.sessionAttribute("currentAdmin", admin);
             ctx.redirect("/admin/dashboard");
+
         } catch (DatabaseException e) {
-            ctx.attribute("fejl", e);
+            ctx.attribute("fejl", e.getMessage());
             ctx.render("admin_login");
         }
     }
 
     private static void setPrice(Context ctx) {
         Admin admin = ctx.sessionAttribute("currentAdmin");
-
         int orderId = Integer.parseInt(ctx.pathParam("orderId"));
 
-        BigDecimal totalPrice = new BigDecimal(Objects.requireNonNull(ctx.formParam("price")));
-
-        String comment = ctx.formParam("comment");
-
         try {
+            String priceParam = Objects.requireNonNull(ctx.formParam("price"));
+            BigDecimal newPrice = new BigDecimal(priceParam).setScale(2, RoundingMode.HALF_UP);
 
-            OrderMapper.changeOrderPrice(orderId, totalPrice, admin, comment);
+            String comment = ctx.formParam("comment");
 
-            ctx.attribute("succes", "Prisen er blevet nedsat. Der sendes en automatisk ordrebekræftigelse på mail til kunden.");
-            ctx.redirect("/admin/dashboard");
+            OrderMapper.changeOrderPrice(orderId, newPrice, admin, comment);
+            OrderMapper.changeOrderStatus(orderId, "ADJUSTED");
 
-        } catch (NumberFormatException | DatabaseException e) {
-            ctx.attribute("fejl", "Ugyldig pris");
+            ctx.sessionAttribute("flashSuccess", "Pris gemt og status sat til ADJUSTED");
+            ctx.redirect("/admin/ordre/" + orderId);
+
+        } catch (NumberFormatException e) {
+            ctx.sessionAttribute("flashError", "Ugyldig pris");
+            ctx.redirect("/admin/ordre/" + orderId);
+
+        } catch (DatabaseException e) {
+            ctx.sessionAttribute("flashError", "DB-fejl: " + e.getMessage());
             ctx.redirect("/admin/ordre/" + orderId);
         }
     }
@@ -116,5 +140,19 @@ public class AdminController {
     private static void handleLogout(Context ctx) {
         ctx.req().getSession().invalidate();
         ctx.redirect("/admin/login");
+    }
+
+    private static void pullFlash(Context ctx) {
+        String ok = ctx.sessionAttribute("flashSuccess");
+        String err = ctx.sessionAttribute("flashError");
+
+        if (ok != null) {
+            ctx.attribute("flashSuccess", ok);
+            ctx.sessionAttribute("flashSuccess", null);
+        }
+        if (err != null) {
+            ctx.attribute("flashError", err);
+            ctx.sessionAttribute("flashError", null);
+        }
     }
 }

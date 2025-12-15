@@ -12,7 +12,10 @@
     <div class="header-content">
         <h1>FOG Carport - Admin Dashboard</h1>
         <div class="admin-info">
-            <span>Logget ind som: <strong th:text="${session.currentAdmin.adminFirstname}"></strong></span>
+            <span>
+                Logget ind som:
+                <strong th:text="${session.currentAdmin != null ? session.currentAdmin.adminFirstname : '—'}"></strong>
+            </span>
             <a th:href="@{/admin/logout}" class="logout-btn">Log ud</a>
         </div>
     </div>
@@ -48,18 +51,28 @@
                 <tbody>
                 <tr th:each="order : ${allOrders}">
                     <td th:text="'#' + ${order.id}"></td>
-                    <td th:text="${order.email}"></td>
+
+                    <td th:text="${order.email != null ? order.email : '—'}"></td>
+
                     <td th:text="${order.lengthMM} + ' x ' + ${order.widthMM} + ' mm'"></td>
+
                     <td>
                         <span th:if="${order.class.simpleName == 'OrderWithShed'}" class="has-shed">Ja</span>
                         <span th:unless="${order.class.simpleName == 'OrderWithShed'}" class="no-shed">Nej</span>
                     </td>
-                    <td th:text="${order.roofType.name}"></td>
-                    <td th:text="${order.totalPrice} + ' kr'"></td>
+
+                    <td th:text="${order.roofType != null ? order.roofType.name : '—'}"></td>
+
+                    <td th:text="${order.totalPrice != null ? order.totalPrice + ' kr' : '—'}"></td>
+
                     <td>
-                        <span class="status-badge" th:classappend="${order.status}" th:text="${order.status}"></span>
+                        <span class="status-badge"
+                              th:classappend="${order.status != null ? order.status : ''}"
+                              th:text="${order.status != null ? order.status : '—'}"></span>
                     </td>
-                    <td th:text="${#temporals.format(order.createdAt, 'dd-MM-yyyy HH:mm')}"></td>
+
+                    <td th:text="${order.createdAt != null ? #dates.format(order.createdAt, 'dd-MM-yyyy HH:mm') : '—'}"></td>
+
                     <td>
                         <a th:href="@{/admin/ordre/{id}(id=${order.id})}" class="view-btn">Vis</a>
                     </td>
@@ -67,7 +80,7 @@
                 </tbody>
             </table>
 
-            <div th:if="${allOrders.isEmpty()}" class="empty-state">
+            <div th:if="${allOrders == null || allOrders.isEmpty()}" class="empty-state">
                 <p>Ingen ordrer fundet</p>
             </div>
         </div>
