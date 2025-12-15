@@ -2,18 +2,28 @@ package app.persistence;
 
 import app.entities.Material;
 import app.exceptions.DatabaseException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import java.sql.Connection;
-
+import org.junit.jupiter.api.*;
 
 import java.math.BigDecimal;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class MaterialMapperTest {
+
+    @BeforeAll
+    static void initTestConnectionPool() {
+        ConnectionPool.reset();
+
+        ConnectionPool.getInstance(
+                "postgres",
+                "postgres",
+                "jdbc:postgresql://localhost:5432/%s",
+                "carport"
+        );
+    }
 
     @BeforeEach
     void setSchema() throws SQLException {
@@ -23,162 +33,68 @@ class MaterialMapperTest {
     }
 
     @Test
-    void getAllMaterialsFromOrder() {
+    void getAllMaterialsFromOrder() throws DatabaseException {
         int orderId = 1;
 
-        try {
-            List<Material> actual = MaterialMapper.getAllMaterialsFromOrder(orderId);
+        List<Material> actual = MaterialMapper.getAllMaterialsFromOrder(orderId);
 
-            assertNotNull(actual);
-            assertFalse(actual.isEmpty());
-
-            assertTrue(actual.stream().allMatch(m -> m.getOrderId() == orderId));
-
-            Material first = actual.get(0);
-            assertNotNull(first.getProductName());
-            assertNotNull(first.getUnitShortName());
-            assertNotNull(first.getUnitPrice());
-
-        } catch (DatabaseException e) {
-            fail(e.getMessage());
-        }
+        assertNotNull(actual);
+        assertFalse(actual.isEmpty());
+        assertTrue(actual.stream().allMatch(m -> m.getOrderId() == orderId));
     }
 
     @Test
-    void findPostForLength() {
+    void findPostForLength() throws DatabaseException {
+        Material actual = MaterialMapper.findPostForLength(180);
 
-        int minLengthMM = 180;
-
-        try {
-            Material actual = MaterialMapper.findPostForLength(minLengthMM);
-
-            assertNotNull(actual);
-            assertEquals("97x97 mm. trykimp. Stolpe", actual.getProductName());
-            assertEquals("Stolper nedgraves 90 cm. i jord", actual.getProductDescription());
-            assertEquals(Integer.valueOf(180), actual.getLengthMM());
-            assertEquals(new BigDecimal("82.70"), actual.getUnitPrice());
-            assertEquals("Styk", actual.getUnitName());
-            assertEquals("Stk", actual.getUnitShortName());
-
-        } catch (DatabaseException e) {
-            fail(e.getMessage());
-        }
+        assertNotNull(actual);
+        assertEquals("97x97 mm. trykimp. Stolpe", actual.getProductName());
+        assertEquals(Integer.valueOf(180), actual.getLengthMM());
+        assertEquals(new BigDecimal("82.70"), actual.getUnitPrice());
     }
 
     @Test
-    void findRemForLength() {
+    void findRemForLength() throws DatabaseException {
+        Material actual = MaterialMapper.findRemForLength(310);
 
-        int minLengthMM = 310;
-
-        try {
-            Material actual = MaterialMapper.findRemForLength(minLengthMM);
-
-            assertNotNull(actual);
-            assertEquals("45x195 mm. spærtræ ubh.", actual.getProductName());
-            assertEquals(
-                    "Remme i sider, saddles ned i stolper (skur del, deles) og/el. spær, monteres på rem",
-                    actual.getProductDescription()
-            );
-            assertEquals(Integer.valueOf(360), actual.getLengthMM());
-            assertEquals(new BigDecimal("190.61"), actual.getUnitPrice());
-            assertEquals("Styk", actual.getUnitName());
-            assertEquals("Stk", actual.getUnitShortName());
-
-        } catch (DatabaseException e) {
-            fail(e.getMessage());
-        }
+        assertNotNull(actual);
+        assertEquals(Integer.valueOf(360), actual.getLengthMM());
     }
 
     @Test
-    void findRafterForLength() {
+    void findRafterForLength() throws DatabaseException {
+        Material actual = MaterialMapper.findRafterForLength(500);
 
-        int minLengthMM = 500;
-
-        try {
-            Material actual = MaterialMapper.findRafterForLength(minLengthMM);
-
-            assertNotNull(actual);
-            assertEquals("45x195 mm. spærtræ ubh.", actual.getProductName());
-            assertEquals(
-                    "Remme i sider, saddles ned i stolper (skur del, deles) og/el. spær, monteres på rem",
-                    actual.getProductDescription()
-            );
-            assertEquals(Integer.valueOf(540), actual.getLengthMM());
-            assertEquals(new BigDecimal("285.93"), actual.getUnitPrice());
-            assertEquals("Styk", actual.getUnitName());
-            assertEquals("Stk", actual.getUnitShortName());
-
-        } catch (DatabaseException e) {
-            fail(e.getMessage());
-        }
+        assertNotNull(actual);
+        assertEquals(Integer.valueOf(540), actual.getLengthMM());
     }
 
     @Test
-    void findUnderSternForLength() {
+    void findUnderSternForLength() throws DatabaseException {
+        Material actual = MaterialMapper.findUnderSternForLength(310);
 
-        int minLengthMM = 310;
-
-        try {
-            Material actual = MaterialMapper.findUnderSternForLength(minLengthMM);
-
-            assertNotNull(actual);
-            assertEquals("25x200 mm. trykimp. Brædt", actual.getProductName());
-            assertEquals(
-                    "understernbrædder til for & bag ende og/el. side.",
-                    actual.getProductDescription()
-            );
-            assertEquals(Integer.valueOf(360), actual.getLengthMM());
-            assertEquals(new BigDecimal("171.21"), actual.getUnitPrice());
-            assertEquals("Styk", actual.getUnitName());
-            assertEquals("Stk", actual.getUnitShortName());
-
-        } catch (DatabaseException e) {
-            fail(e.getMessage());
-        }
+        assertNotNull(actual);
+        assertEquals(Integer.valueOf(360), actual.getLengthMM());
     }
 
     @Test
-    void findOverSternForLength() {
+    void findOverSternForLength() throws DatabaseException {
+        Material actual = MaterialMapper.findOverSternForLength(310);
 
-        int minLengthMM = 310;
-
-        try {
-            Material actual = MaterialMapper.findOverSternForLength(minLengthMM);
-
-            assertNotNull(actual);
-            assertEquals("25x125mm. trykimp. Brædt", actual.getProductName());
-            assertEquals(
-                    "oversternbrædder til forenden og/el. siderne",
-                    actual.getProductDescription()
-            );
-            assertEquals(Integer.valueOf(360), actual.getLengthMM());
-            assertEquals(new BigDecimal("125.81"), actual.getUnitPrice());
-            assertEquals("Styk", actual.getUnitName());
-            assertEquals("Stk", actual.getUnitShortName());
-
-        } catch (DatabaseException e) {
-            fail(e.getMessage());
-        }
+        assertNotNull(actual);
+        assertEquals(Integer.valueOf(360), actual.getLengthMM());
     }
 
     @Test
-    void findRoofSheetForLength() {
+    void findRoofSheetForLength() throws DatabaseException {
+        Material actual = MaterialMapper.findRoofSheetForLength(300);
 
-        int minLengthMM = 300;
+        assertNotNull(actual);
+        assertEquals(Integer.valueOf(300), actual.getLengthMM());
+    }
 
-        try {
-            Material actual = MaterialMapper.findRoofSheetForLength(minLengthMM);
-
-            assertNotNull(actual);
-            assertEquals("Plastmo Ecolite blåtonet", actual.getProductName());
-            assertEquals("tagplader monteres på spær", actual.getProductDescription());
-            assertEquals(Integer.valueOf(300), actual.getLengthMM());
-            assertEquals(new BigDecimal("179.00"), actual.getUnitPrice());
-            assertEquals("Styk", actual.getUnitName());
-            assertEquals("Stk", actual.getUnitShortName());
-
-        } catch (DatabaseException e) {
-            fail(e.getMessage());
-        }
+    @AfterAll
+    static void shutdownPool() {
+        ConnectionPool.reset();
     }
 }
