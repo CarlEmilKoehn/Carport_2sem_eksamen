@@ -5,6 +5,8 @@ import app.entities.Order;
 import app.exceptions.DatabaseException;
 import app.persistence.AdminMapper;
 import app.persistence.OrderMapper;
+import app.services.email.CarportMailService;
+import app.services.email.MailSender;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 
@@ -76,7 +78,33 @@ public class AdminController {
             }
         });
 
-        app.post("/admin/ordre/{orderId}/price", AdminController::setPrice);
+        app.post("/admin/ordre/{orderId}/price", ctx -> {
+
+            Admin admin = ctx.sessionAttribute("currentAdmin");
+            int orderId = Integer.parseInt(ctx.pathParam("orderId"));
+
+            try {
+                String priceParam = Objects.requireNonNull(ctx.formParam("price"));
+                BigDecimal newPrice = new BigDecimal(priceParam).setScale(2, RoundingMode.HALF_UP);
+                String comment = ctx.formParam("comment");
+
+                OrderMapper.changeOrderPrice(orderId, newPrice, admin, comment);
+                OrderMapper.changeOrderStatus(orderId, "ADJUSTED");
+
+                Order order = OrderMapper.getOrderByOrderId(orderId);
+
+                CarportMailService mailService = new CarportMailService(new MailSender());
+                mailService.sendPriceGiven(order);
+
+                ctx.sessionAttribute("flashSuccess", "Pris gemt, status sat til ADJUSTED og mail sendt.");
+                ctx.redirect("/admin/ordre/" + orderId);
+
+            } catch (Exception e) {
+                ctx.sessionAttribute("flashError", "Kunne ikke gemme/sende mail: " + e.getMessage());
+                ctx.redirect("/admin/ordre/" + orderId);
+            }
+        });
+
 
         app.get("/admin/logout", AdminController::handleLogout);
     }
@@ -108,32 +136,6 @@ public class AdminController {
         } catch (DatabaseException e) {
             ctx.attribute("fejl", e.getMessage());
             ctx.render("admin_login");
-        }
-    }
-
-    private static void setPrice(Context ctx) {
-        Admin admin = ctx.sessionAttribute("currentAdmin");
-        int orderId = Integer.parseInt(ctx.pathParam("orderId"));
-
-        try {
-            String priceParam = Objects.requireNonNull(ctx.formParam("price"));
-            BigDecimal newPrice = new BigDecimal(priceParam).setScale(2, RoundingMode.HALF_UP);
-
-            String comment = ctx.formParam("comment");
-
-            OrderMapper.changeOrderPrice(orderId, newPrice, admin, comment);
-            OrderMapper.changeOrderStatus(orderId, "ADJUSTED");
-
-            ctx.sessionAttribute("flashSuccess", "Pris gemt og status sat til ADJUSTED");
-            ctx.redirect("/admin/ordre/" + orderId);
-
-        } catch (NumberFormatException e) {
-            ctx.sessionAttribute("flashError", "Ugyldig pris");
-            ctx.redirect("/admin/ordre/" + orderId);
-
-        } catch (DatabaseException e) {
-            ctx.sessionAttribute("flashError", "DB-fejl: " + e.getMessage());
-            ctx.redirect("/admin/ordre/" + orderId);
         }
     }
 
