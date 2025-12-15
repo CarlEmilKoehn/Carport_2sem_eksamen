@@ -12,6 +12,41 @@ CREATE TABLE IF NOT EXISTS public.admin
     CONSTRAINT admin_pkey PRIMARY KEY (admin_email)
     );
 
+CREATE TABLE IF NOT EXISTS public.customer
+(
+    email character varying COLLATE pg_catalog."default" NOT NULL,
+    firstname character varying COLLATE pg_catalog."default" NOT NULL,
+    lastname character varying COLLATE pg_catalog."default" NOT NULL,
+    address character varying COLLATE pg_catalog."default" NOT NULL,
+    postal_code integer NOT NULL,
+    CONSTRAINT customer_pkey PRIMARY KEY (email)
+    );
+
+CREATE TABLE IF NOT EXISTS public.customer_order
+(
+    customer_order_id serial NOT NULL,
+    customer_email character varying COLLATE pg_catalog."default" NOT NULL,
+    order_status character varying COLLATE pg_catalog."default" NOT NULL,
+    roof_type_id integer NOT NULL,
+    width_mm integer NOT NULL,
+    length_mm integer NOT NULL,
+    height_mm integer NOT NULL,
+    shed_id integer,
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    order_price numeric(10, 2) NOT NULL,
+    CONSTRAINT customer_order_pkey PRIMARY KEY (customer_order_id)
+    );
+
+CREATE TABLE IF NOT EXISTS public.customer_order_change
+(
+    customer_order_change_id serial NOT NULL,
+    customer_order_id integer NOT NULL,
+    admin_email character varying COLLATE pg_catalog."default" NOT NULL,
+    admin_note character varying COLLATE pg_catalog."default",
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    CONSTRAINT customer_order_change_pkey PRIMARY KEY (customer_order_change_id)
+    );
+
 CREATE TABLE IF NOT EXISTS public.material_category
 (
     material_category_id serial NOT NULL,
@@ -31,11 +66,10 @@ CREATE TABLE IF NOT EXISTS public.material_product
     CONSTRAINT material_product_pkey PRIMARY KEY (material_product_id)
     );
 
-
 CREATE TABLE IF NOT EXISTS public.order_material
 (
     order_material_id serial NOT NULL,
-    user_order_id integer NOT NULL,
+    customer_order_id integer NOT NULL,
     material_product_id integer NOT NULL,
     quantity integer NOT NULL,
     note text COLLATE pg_catalog."default",
@@ -68,102 +102,66 @@ CREATE TABLE IF NOT EXISTS public.unit
     CONSTRAINT unit_pkey PRIMARY KEY (unit_id)
     );
 
-CREATE TABLE IF NOT EXISTS public."customer"
-(
-    email character varying COLLATE pg_catalog."default" NOT NULL,
-    firstname character varying COLLATE pg_catalog."default" NOT NULL,
-    lastname character varying COLLATE pg_catalog."default" NOT NULL,
-    adress character varying COLLATE pg_catalog."default" NOT NULL,
-    postal_code integer NOT NULL,
-    CONSTRAINT customer_pkey PRIMARY KEY (email)
-    );
-
-CREATE TABLE IF NOT EXISTS public.customer_order
-(
-    customer_order_id serial NOT NULL,
-    customer_email character varying COLLATE pg_catalog."default" NOT NULL,
-    order_status character varying COLLATE pg_catalog."default" NOT NULL,
-    roof_type_id integer NOT NULL,
-    width_mm integer NOT NULL,
-    length_mm interger NOT NULL,
-    height_mm integer NOT NULL,
-    shed_id integer,
-    created_at timestamp with time zone NOT NULL DEFAULT now(),
-    order_price numeric(10, 2) NOT NULL,
-    CONSTRAINT customer_order_pkey PRIMARY KEY (customer_order_id)
-    );
-
-CREATE TABLE IF NOT EXISTS public.customer_order_change
-(
-    customer_order_change_id serial NOT NULL,
-    customer_order_id integer NOT NULL,
-    admin_email character varying COLLATE pg_catalog."default" NOT NULL,
-    admin_note character varying COLLATE pg_catalog."default",
-    created_at timestamp with time zone NOT NULL DEFAULT now(),
-    CONSTRAINT costumer_order_change_pkey PRIMARY KEY (customer_order_change_id)
-    );
-
-ALTER TABLE IF EXISTS public.material_product
-    ADD CONSTRAINT material_product_material_category_id_fkey FOREIGN KEY (material_category_id)
-    REFERENCES public.material_category (material_category_id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-       ON DELETE NO ACTION;
-
-
-ALTER TABLE IF EXISTS public.material_product
-    ADD CONSTRAINT material_product_unit_id_fkey FOREIGN KEY (unit_id)
-    REFERENCES public.unit (unit_id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-       ON DELETE NO ACTION;
-
-
-ALTER TABLE IF EXISTS public.order_material
-    ADD CONSTRAINT order_material_material_product_id_fkey FOREIGN KEY (material_product_id)
-    REFERENCES public.material_product (material_product_id) MATCH SIMPLE
-    ON UPDATE NO ACTION
-       ON DELETE NO ACTION;
-
-
-ALTER TABLE IF EXISTS public.order_material
-    ADD CONSTRAINT order_material_customer_order_id_fkey FOREIGN KEY (customer_order_id)
-    REFERENCES public.customer_order (customer_order_id) MATCH SIMPLE
+ALTER TABLE IF EXISTS public.customer_order
+    ADD CONSTRAINT customer_order_customer_fkey FOREIGN KEY (customer_email)
+    REFERENCES public.customer (email) MATCH SIMPLE
     ON UPDATE NO ACTION
        ON DELETE NO ACTION;
 
 
 ALTER TABLE IF EXISTS public.customer_order
-    ADD CONSTRAINT customer_order_roof_type_id_fkey FOREIGN KEY (roof_type_id)
+    ADD CONSTRAINT customer_order_roof_type_fkey FOREIGN KEY (roof_type_id)
     REFERENCES public.roof_type (roof_type_id) MATCH SIMPLE
     ON UPDATE NO ACTION
        ON DELETE NO ACTION;
 
 
 ALTER TABLE IF EXISTS public.customer_order
-    ADD CONSTRAINT customer_order_shed_id_fkey FOREIGN KEY (shed_id)
+    ADD CONSTRAINT customer_order_shed_fkey FOREIGN KEY (shed_id)
     REFERENCES public.shed (shed_id) MATCH SIMPLE
     ON UPDATE NO ACTION
        ON DELETE NO ACTION;
 
 
-ALTER TABLE IF EXISTS public.customer_order
-    ADD CONSTRAINT customer_order_customer_email_fkey FOREIGN KEY (email)
-    REFERENCES public."customer" (email) MATCH SIMPLE
-    ON UPDATE NO ACTION
-       ON DELETE NO ACTION;
-
-
 ALTER TABLE IF EXISTS public.customer_order_change
-    ADD CONSTRAINT customer_order_change_admin FOREIGN KEY (admin_email)
+    ADD CONSTRAINT customer_order_change_admin_fkey FOREIGN KEY (admin_email)
     REFERENCES public.admin (admin_email) MATCH SIMPLE
     ON UPDATE NO ACTION
        ON DELETE NO ACTION;
 
 
 ALTER TABLE IF EXISTS public.customer_order_change
-    ADD CONSTRAINT customer_order_change_customer_order_id_fkey FOREIGN KEY (customer_order_id)
+    ADD CONSTRAINT customer_order_change_order_fkey FOREIGN KEY (customer_order_id)
     REFERENCES public.customer_order (customer_order_id) MATCH SIMPLE
     ON UPDATE NO ACTION
        ON DELETE NO ACTION;
 
+
+ALTER TABLE IF EXISTS public.material_product
+    ADD CONSTRAINT material_product_category_fkey FOREIGN KEY (material_category_id)
+    REFERENCES public.material_category (material_category_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+       ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.material_product
+    ADD CONSTRAINT material_product_unit_fkey FOREIGN KEY (unit_id)
+    REFERENCES public.unit (unit_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+       ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.order_material
+    ADD CONSTRAINT order_material_order_fkey FOREIGN KEY (customer_order_id)
+    REFERENCES public.customer_order (customer_order_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+       ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.order_material
+    ADD CONSTRAINT order_material_product_fkey FOREIGN KEY (material_product_id)
+    REFERENCES public.material_product (material_product_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+       ON DELETE NO ACTION;
 
 END;

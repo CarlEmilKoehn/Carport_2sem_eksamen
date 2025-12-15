@@ -27,7 +27,7 @@ public class CustomerMapper {
             if (rs.next()) {
                 String firstname = rs.getString("firstname");
                 String lastname = rs.getString("lastname");
-                String address = rs.getString("adress");
+                String address = rs.getString("address");
                 int postalCode = rs.getInt("postal_code");
 
                 customer = new Customer(email, firstname, lastname, address, postalCode);
@@ -58,7 +58,7 @@ public class CustomerMapper {
                 String email = rs.getString("email");
                 String firstname = rs.getString("firstname");
                 String lastname = rs.getString("lastname");
-                String address = rs.getString("adress");
+                String address = rs.getString("address");
                 int postalCode = rs.getInt("postal_code");
 
                 users.add(new Customer(email, firstname, lastname, address, postalCode));
@@ -72,7 +72,7 @@ public class CustomerMapper {
     }
 
     public static void registerCustomer(String email, String firstName, String lastName, String address, int postalCode) throws DatabaseException {
-        String sql = "INSERT INTO customer (email, firstname, lastname, adress, postal_code) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO customer (email, firstname, lastname, address, postal_code) VALUES (?, ?, ?, ?, ?)";
 
         try(Connection connection = ConnectionPool.getInstance().getConnection()) {
             PreparedStatement ps = connection.prepareStatement(sql);

@@ -37,7 +37,7 @@ class CustomerMapperTest {
 
             String sql = """
             INSERT INTO customer
-            (email, firstname, lastname, adress, postal_code)
+            (email, firstname, lastname, address, postal_code)
             VALUES (?, ?, ?, ?, ?)
             """;
 
