@@ -19,7 +19,6 @@ public class OrderController {
 
     public static void addRoutes(Javalin app) {
 
-        // Kunde opretter ordre
         app.post("/submitRequestForCarport", ctx -> {
             Order order = handleCreateOrder(ctx);
             guardAgainstOrderEqualsNull(order);
