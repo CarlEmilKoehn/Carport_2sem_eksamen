@@ -9,6 +9,7 @@ import io.javalin.Javalin;
 import io.javalin.http.Context;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Objects;
 
 public class AdminController {
@@ -23,7 +24,14 @@ public class AdminController {
         app.post("/admin/login", ctx -> handleLogin(ctx));
 
         app.get("/admin/dashboard", ctx -> {
-            ctx.attribute("allOrders", OrderMapper.getAllOrders());
+            String status = ctx.queryParam("status");
+
+            List<Order> orders = (status == null || status.isBlank())
+                    ? OrderMapper.getAllOrders()
+                    : OrderMapper.getOrdersByStatus(status);
+
+            ctx.attribute("allOrders", orders);
+            ctx.attribute("selectedStatus", status == null ? "all" : status.toUpperCase());
             ctx.render("admin_dashboard");
         });
 
@@ -46,6 +54,9 @@ public class AdminController {
 
             ctx.render("admin_ordre");
         });
+
+        app.post("/admin/ordre/{orderId}/price", AdminController::setPrice);
+
 
         app.get("/admin/logout", ctx -> handleLogout(ctx));
     }
@@ -84,7 +95,8 @@ public class AdminController {
 
         int orderId = Integer.parseInt(ctx.pathParam("orderId"));
 
-        BigDecimal totalPrice = BigDecimal.valueOf(Long.parseLong(Objects.requireNonNull(ctx.formParam("price"))));
+        BigDecimal totalPrice = new BigDecimal(Objects.requireNonNull(ctx.formParam("price")));
+
         String comment = ctx.formParam("comment");
 
         try {
