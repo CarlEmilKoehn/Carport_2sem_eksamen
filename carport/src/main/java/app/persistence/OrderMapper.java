@@ -12,6 +12,67 @@ import java.util.List;
 
 public class OrderMapper {
 
+    public static List<Order> getOrdersByStatus(String status) throws DatabaseException {
+        List<Order> orders = new ArrayList<>();
+
+        String sql = "SELECT " +
+                "uo.user_order_id, uo.user_email, uo.order_status, uo.width_mm, uo.height_mm, uo.length_mm, uo.order_price, uo.created_at, " +
+                "rt.roof_type_id, rt.roof_type_name, rt.roof_type_deg, rt.roof_type_price, " +
+                "s.shed_id, s.shed_width_mm, s.shed_length_mm " +
+                "FROM public.user_order uo " +
+                "JOIN roof_type rt ON uo.roof_type_id = rt.roof_type_id " +
+                "LEFT JOIN shed s ON uo.shed_id = s.shed_id " +
+                "WHERE uo.order_status = ?";
+
+        try (Connection connection = ConnectionPool.getInstance().getConnection();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+
+            stmt.setString(1, status);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+
+                    int orderID = rs.getInt("user_order_id");
+                    String email = rs.getString("user_email");
+
+                    RoofType roofType = new RoofType(
+                            rs.getInt("roof_type_id"),
+                            rs.getString("roof_type_name"),
+                            rs.getInt("roof_type_deg"),
+                            rs.getBigDecimal("roof_type_price")
+                    );
+
+                    int widthMM = rs.getInt("width_mm");
+                    int heightMM = rs.getInt("height_mm");
+                    int lengthMM = rs.getInt("length_mm");
+                    Timestamp createdAt = rs.getTimestamp("created_at");
+                    BigDecimal totalPrice = rs.getBigDecimal("order_price");
+
+                    List<Material> materials = MaterialMapper.getAllMaterialsFromOrder(orderID);
+                    List<Comment> comments = getAllCommentsFromOrder(orderID);
+
+                    Shed shed = new Shed(
+                            rs.getInt("shed_id"),
+                            rs.getInt("shed_width_mm"),
+                            rs.getInt("shed_length_mm")
+                    );
+
+                    if (shed.getId() == 0 || shed.getWidthMM() == 0 || shed.getLengthMM() == 0) {
+                        orders.add(new Order(orderID, email, status, roofType, widthMM, heightMM, lengthMM, createdAt, materials, comments, totalPrice));
+                    } else {
+                        orders.add(new OrderWithShed(orderID, email, status, roofType, widthMM, heightMM, lengthMM, createdAt, materials, comments, totalPrice, shed));
+                    }
+                }
+            }
+
+            return orders;
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Could not connect to DB: ", e.getMessage());
+        }
+    }
+
+
     public static int createOrder(Order order) throws DatabaseException{
 
         String orderSql = "INSERT INTO public.user_order " +

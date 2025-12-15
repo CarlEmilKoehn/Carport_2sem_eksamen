@@ -22,9 +22,10 @@
     <section class="filter-section">
         <div class="filter-buttons">
             <a th:href="@{/admin/dashboard}" class="filter-btn">Alle ordrer</a>
-            <a th:href="@{/admin/dashboard(status='pending')}" class="filter-btn pending">Pending</a>
-            <a th:href="@{/admin/dashboard(status='accepted')}" class="filter-btn accepted">Accepted</a>
-            <a th:href="@{/admin/dashboard(status='rejected')}" class="filter-btn rejected">Rejected</a>
+            <a th:href="@{/admin/dashboard(status='PENDING')}" class="filter-btn pending">Pending</a>
+            <a th:href="@{/admin/dashboard(status='REJECTED')}" class="filter-btn rejected">Rejected</a>
+            <a th:href="@{/admin/dashboard(status='ACCEPTED')}" class="filter-btn accepted">Accepted</a>
+            <a th:href="@{/admin/dashboard(status='ADJUSTED')}" class="filter-btn adjusted">Adjusted</a>
         </div>
     </section>
 
