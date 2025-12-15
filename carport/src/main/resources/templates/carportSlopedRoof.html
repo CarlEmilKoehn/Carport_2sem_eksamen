@@ -2,7 +2,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <title>Fog - Holder i længden</title>
 
     <link rel="icon" type="image/x-icon" th:href="@{/images/favicon.ico}">
@@ -10,300 +9,137 @@
 </head>
 
 <body>
-
 <header id="top" class="topbar">
     <div class="topbar-inner">
-        <img th:src="@{/images/foglogo.png}"
-             alt="logo"
-             class="headerLogo"
-             height="100"
-             width="100">
+        <img th:src="@{/images/foglogo.png}" alt="logo" class="headerLogo" height="100" width="100">
 
         <nav class="mainNav">
             <a href="https://www.johannesfog.dk/have-fritid/carporte/enkelt-carporte"
                class="headerButton" target="_blank" rel="noopener">
                 Standard Carport
             </a>
-            <a th:href="@{/customMadeCarport}"
-               class="headerButton">
+            <a th:href="@{/customMadeCarport}" class="headerButton">
                 Skræddersyet Carport
             </a>
-        </nav>    </div></header>
+        </nav>
+    </div>
+</header>
+
 <section class="cardsSection">
     <main class="cards">
         <article class="card">
+            <h2>Carport med skråt tag</h2>
 
-            <h2>Carport med fladt tag</h2>
-            <form th:action="@{/carportSlopedRoof}" method="post" class="carportForm">
+            <form th:action="@{/createOrder}" method="post" class="carportForm">
 
                 <label>Carport bredde</label>
                 <select name="carportWidthMm" required>
                     <option value="">Vælg bredde</option>
-                    <option value="2400" th:selected="${carportWidthMm == 2400}">240 cm</option>
-                    <option value="2700" th:selected="${carportWidthMm == 2700}">270 cm</option>
-                    <option value="3000" th:selected="${carportWidthMm == 3000}">300 cm</option>
-                    <option value="3300" th:selected="${carportWidthMm == 3300}">330 cm</option>
-                    <option value="3600" th:selected="${carportWidthMm == 3600}">360 cm</option>
-                    <option value="3900" th:selected="${carportWidthMm == 3900}">390 cm</option>
-                    <option value="4200" th:selected="${carportWidthMm == 4200}">420 cm</option>
-                    <option value="4500" th:selected="${carportWidthMm == 4500}">450 cm</option>
-                    <option value="4800" th:selected="${carportWidthMm == 4800}">480 cm</option>
-                    <option value="5100" th:selected="${carportWidthMm == 5100}">510 cm</option>
-                    <option value="5400" th:selected="${carportWidthMm == 5400}">540 cm</option>
-                    <option value="5700" th:selected="${carportWidthMm == 5700}">570 cm</option>
-                    <option value="6000" th:selected="${carportWidthMm == 6000}">600 cm</option>
-                </select>                <label>Carport længde</label>
+                    <option value="2400">240 cm</option>
+                    <option value="2700">270 cm</option>
+                    <option value="3000">300 cm</option>
+                    <option value="3300">330 cm</option>
+                    <option value="3600">360 cm</option>
+                    <option value="3900">390 cm</option>
+                    <option value="4200">420 cm</option>
+                    <option value="4500">450 cm</option>
+                    <option value="4800">480 cm</option>
+                    <option value="5100">510 cm</option>
+                    <option value="5400">540 cm</option>
+                    <option value="5700">570 cm</option>
+                    <option value="6000">600 cm</option>
+                </select>
+
+                <label>Carport længde</label>
                 <select name="carportLengthMm" required>
                     <option value="">Vælg længde</option>
-                    <option value="2400" th:selected="${carportLengthMm == 2400}">240 cm</option>
-                    <option value="3000" th:selected="${carportLengthMm == 3000}">300 cm</option>
-                    <option value="3600" th:selected="${carportLengthMm == 3600}">360 cm</option>
-                    <option value="4200" th:selected="${carportLengthMm == 4200}">420 cm</option>
-                    <option value="4800" th:selected="${carportLengthMm == 4800}">480 cm</option>
-                    <option value="5400" th:selected="${carportLengthMm == 5400}">540 cm</option>
-                    <option value="6000" th:selected="${carportLengthMm == 6000}">600 cm</option>
-                    <option value="6600" th:selected="${carportLengthMm == 6600}">660 cm</option>
-                    <option value="7200" th:selected="${carportLengthMm == 7200}">720 cm</option>
-                    <option value="7800" th:selected="${carportLengthMm == 7800}">780 cm</option>
-                </select>                <label>Taghældning</label>
+                    <option value="2400">240 cm</option>
+                    <option value="3000">300 cm</option>
+                    <option value="3600">360 cm</option>
+                    <option value="4200">420 cm</option>
+                    <option value="4800">480 cm</option>
+                    <option value="5400">540 cm</option>
+                    <option value="6000">600 cm</option>
+                    <option value="6600">660 cm</option>
+                    <option value="7200">720 cm</option>
+                    <option value="7800">780 cm</option>
+                </select>
 
+                <label>Taghældning</label>
                 <select name="roofSlopeDeg" required>
                     <option value="">Vælg taghældning</option>
-                    <option value="15" th:selected="${roofSlopeDeg == 15}">15 grader</option>
-                    <option value="20" th:selected="${roofSlopeDeg == 20}">20 grader</option>
-                    <option value="25" th:selected="${roofSlopeDeg == 25}">25 grader</option>
-                    <option value="30" th:selected="${roofSlopeDeg == 30}">30 grader</option>
-                    <option value="35" th:selected="${roofSlopeDeg == 35}">35 grader</option>
-                    <option value="40" th:selected="${roofSlopeDeg == 40}">40 grader</option>
-                    <option value="45" th:selected="${roofSlopeDeg == 45}">45 grader</option>
-                </select>                <h3>Redskabsrum</h3>
+                    <option value="15">15 grader</option>
+                    <option value="20">20 grader</option>
+                    <option value="25">25 grader</option>
+                    <option value="30">30 grader</option>
+                    <option value="35">35 grader</option>
+                    <option value="40">40 grader</option>
+                    <option value="45">45 grader</option>
+                </select>
 
+                <h3>Redskabsrum</h3>
                 <label class="shedCheckboxLabel">
                     <div class="shedCheckboxContainer">
-                        <input type="checkbox"
-                               id="toggleShed"
-                               onclick="toggleShedOptions()">
+                        <input type="checkbox" id="toggleShed" name="hasShed" onclick="toggleShedOptions()">
                         <span class="shedCheckboxText">Tilføj redskabsrum</span>
-                    </div>                </label>
+                    </div>
+                </label>
 
                 <div id="shedOptions" style="display:none;">
-
                     <label>Redskabsrum bredde</label>
-                    <select name="shedWidthMm">
-                        <option value="2100" th:selected="${shedWidthMm == 2100}">210 cm</option>
-                        <option value="2400" th:selected="${shedWidthMm == 2400}">240 cm</option>
-                        <option value="2700" th:selected="${shedWidthMm == 2700}">270 cm</option>
-                        <option value="3000" th:selected="${shedWidthMm == 3000}">300 cm</option>
-                    </select>                    <label>Redskabsrum længde</label>
-                    <select name="shedLengthMm">
-                        <option value="1500" th:selected="${shedLengthMm == 1500}">150 cm</option>
-                        <option value="1800" th:selected="${shedLengthMm == 1800}">180 cm</option>
-                        <option value="2100" th:selected="${shedLengthMm == 2100}">210 cm</option>
-                        <option value="2400" th:selected="${shedLengthMm == 2400}">240 cm</option>
-                    </select>                </div>                <button type="submit" class="submitButton">
-                Vis og/el. opdater tegning
-            </button>
-            </form>            <p th:if="${svg == null}" class="hint">
-            Vælg mål og klik “Vis tegning” for at fortsætte
-        </p>
+                    <select name="shedWidthMm" id="shedWidthMm" disabled>
+                        <option value="2100">210 cm</option>
+                        <option value="2400">240 cm</option>
+                        <option value="2700">270 cm</option>
+                        <option value="3000">300 cm</option>
+                    </select>
 
-            <section class="svgPreview"
-                     th:if="${svg != null}"
-                     th:utext="${svg}">
-            </section>            <form th:if="${svg != null}"
-                                        th:action="@{/createOrder}"
-                                        method="post"
-                                        class="carportForm">
+                    <label>Redskabsrum længde</label>
+                    <select name="shedLengthMm" id="shedLengthMm" disabled>
+                        <option value="1500">150 cm</option>
+                        <option value="1800">180 cm</option>
+                        <option value="2100">210 cm</option>
+                        <option value="2400">240 cm</option>
+                    </select>
+                </div>
 
-            <input type="hidden" name="carportWidthMm" th:value="${carportWidthMm}">
-            <input type="hidden" name="carportLengthMm" th:value="${carportLengthMm}">
-            <input type="hidden" name="shedWidthMm" th:value="${shedWidthMm}">
-            <input type="hidden" name="shedLengthMm" th:value="${shedLengthMm}">
+                <h3>Kontaktoplysninger</h3>
 
+                <label>Fornavn</label>
+                <input type="text" name="firstname" required>
 
-            <h3>Kontaktoplysninger</h3>
+                <label>Efternavn</label>
+                <input type="text" name="lastname" required>
 
-            <label>Fornavn</label>
-            <input type="text" name="firstname" required>
+                <label>Adresse</label>
+                <input type="text" name="address" required>
 
-            <label>Efternavn</label>
-            <input type="text" name="lastname" required>
+                <label>Postnummer</label>
+                <input type="text" name="postalcode" required>
 
-            <label>Adresse</label>
-            <input type="text" name="address" required>
+                <label>Email</label>
+                <input type="email" name="email" required>
 
-            <label>Postnummer</label>
-            <input type="text" name="postalcode" required>
+                <button type="submit" class="submitButton">
+                    Bestil tilbud
+                </button>
+            </form>
 
-            <label>Email</label>
-            <input type="email" name="email" required>
-
-            <button type="submit" class="submitButton">
-                Bestil tilbud
-            </button>
-        </form>        </article>    </main></section>
-<footer>
-    <footer>        <nav class="footerNav">
-        <div class="footerColumn">
-            <a href="https://www.johannesfog.dk/om-fog/kundeservice"
-               class="mainFooterButton" target="_blank" rel="noopener">
-                Kundeservice </a>
-
-            <a href="https://www.johannesfog.dk/om-fog/kontakt"
-               class="footerButton" target="_blank" rel="noopener">
-                Kontakt Fog </a>
-
-            <a href="https://www.johannesfog.dk/om-fog/kundeservice/ofte-stillede-spoergsmaal"
-               class="footerButton" target="_blank" rel="noopener">
-                Ofte stillede spørgsmål </a>
-
-            <a href="https://www.johannesfog.dk/om-fog/kundeservice/koebs-og-leveringsvilkaar-online"
-               class="footerButton" target="_blank" rel="noopener">
-                Købs- og leveringsvilkår online </a>
-
-            <a href="https://www.johannesfog.dk/om-fog/kundeservice/fortrydelse-og-returnering"
-               class="footerButton" target="_blank" rel="noopener">
-                Fortrydelse og returnering </a>
-
-            <a href="https://www.johannesfog.dk/om-fog/kundeservice/reklamation-og-klage"
-               class="footerButton" target="_blank" rel="noopener">
-                Reklamation og klage </a>
-
-            <a href="https://www.johannesfog.dk/om-fog/kundeservice/fragt"
-               class="footerButton" target="_blank" rel="noopener">
-                Fragt </a>
-
-            <a href="https://www.johannesfog.dk/om-fog/kundeservice/prismatch"
-               class="footerButton" target="_blank" rel="noopener">
-                Prismatch </a>
-
-            <a href="https://www.johannesfog.dk/om-fog/service/laan-en-trailer"
-               class="footerButton" target="_blank" rel="noopener">
-                Lån en trailer </a>
-
-            <a href="https://www.johannesfog.dk/om-fog/service/udlejning"
-               class="footerButton" target="_blank" rel="noopener">
-                Udlejning </a>
-
-            <a href="https://www.johannesfog.dk/om-fog/kundeservice/fog-konto"
-               class="footerButton" target="_blank" rel="noopener">
-                Bliv kontokunde </a>
-
-        </div>
-        <div class="footerColumn">
-            <a href="https://www.johannesfog.dk/om-fog/aktuelt"
-               class="mainFooterButton" target="_blank" rel="noopener">
-                Aktuelt </a>
-
-            <a href="https://www.johannesfog.dk/brands"
-               class="footerButton" target="_blank" rel="noopener">
-                Mærker </a>
-
-            <a href="https://www.johannesfog.dk/om-fog/aktuelt/aviser-og-kataloger"
-               class="footerButton" target="_blank" rel="noopener">
-                Aviser og kataloger </a>
-
-            <a href="https://www.johannesfog.dk/om-fog/nyhedsbrev"
-               class="footerButton" target="_blank" rel="noopener">
-                Tilmeld nyhedsbrev </a>
-
-            <a href="https://www.johannesfog.dk/inspiration"
-               class="footerButton" target="_blank" rel="noopener">
-                Inspiration og guides </a>
-
-            <a href="https://www.linkedin.com/company/xlbyg-fog/"
-               class="footerButton" target="_blank" rel="noopener">
-                LinkedIn </a>
-
-            <a href="https://www.instagram.com/fogboligdesign/"
-               class="footerButton" target="_blank" rel="noopener">
-                Instagram </a>
-
-            <a href="https://www.facebook.com/boligdesignhus"
-               class="footerButton" target="_blank" rel="noopener">
-                Facebook </a>
-
-        </div>
-        <div class="footerColumn">
-            <a href="https://www.johannesfog.dk/om-fog"
-               class="mainFooterButton" target="_blank" rel="noopener">
-                Om Fog </a>
-
-            <a href="https://www.johannesfog.dk/om-fog/forretninger"
-               class="footerButton" target="_blank" rel="noopener">
-                Åbningstider </a>
-
-            <a href="https://www.johannesfog.dk/om-fog"
-               class="footerButton" target="_blank" rel="noopener">
-                Om Fog </a>
-
-            <a href="https://www.johannesfog.dk/om-fog/fogs-fond"
-               class="footerButton" target="_blank" rel="noopener">
-                Fogs Fond </a>
-
-            <a href="https://www.johannesfog.dk/om-fog/job-i-fog"
-               class="footerButton" target="_blank" rel="noopener">
-                Karriere i Fog </a>
-
-            <a href="https://www.johannesfog.dk/om-fog/kundeservice/fog-konto"
-               class="footerButton" target="_blank" rel="noopener">
-                Bliv kontokunde i Fog </a>
-
-            <a href="https://www.johannesfog.dk/om-fog/betingelser-og-vilkaar/db20-salgs-og-leveringsbetingelser"
-               class="footerButton" target="_blank" rel="noopener">
-                Konto salgs- og leveringsbetingelser </a>
-
-            <a href="https://www.johannesfog.dk/om-fog/betingelser-og-vilkaar/persondatapolitik"
-               class="footerButton" target="_blank" rel="noopener">
-                Persondatapolitik </a>
-
-            <a href="https://www.johannesfog.dk/om-fog/betingelser-og-vilkaar/cookies"
-               class="footerButton" target="_blank" rel="noopener">
-                Cookies </a>
-        </div>
-        <div class="footerColumn">
-            <a href="#top" class="mainFooterButton"
-               onclick="scrollToTop(); return false;">
-                Med omtanke </a>
-
-            <a href="https://www.johannesfog.dk/om-fog/csr"
-               class="footerButton" target="_blank" rel="noopener">
-                CSR-rapporter </a>
-
-            <a href="https://www.johannesfog.dk/om-fog/certificering"
-               class="footerButton" target="_blank" rel="noopener">
-                Certificering </a>
-
-            <a href="https://www.johannesfog.dk/om-fog/whistleblowerordning"
-               class="footerButton" target="_blank" rel="noopener">
-                Whistleblowerordning </a>
-
-            <a href="https://www.johannesfog.dk/om-fog/whistleblowerpolitik"
-               class="footerButton" target="_blank" rel="noopener">
-                Whistleblowerpolitik </a>
-        </div>
-        <div class="footerBrand">
-            <a href="#"
-               onclick="scrollToTop(); return false;">
-                <img th:src="@{/images/foglogo.png}"
-                     src="/images/foglogo.png"
-                     alt="logo"
-                     class="footerLogo"
-                     height="65"
-                     width="65">
-            </a>                <p>                    <b>Johannes Fog A/S</b><br>
-            Firskovvej 20<br>
-            2800 Lyngby
-        </p>
-        </div>        </nav>    </footer></footer>
+        </article>
+    </main>
+</section>
 
 <script>
     function toggleShedOptions() {
+        const checked = document.getElementById('toggleShed').checked;
         const shedDiv = document.getElementById('shedOptions');
-        shedDiv.style.display =
-            document.getElementById('toggleShed').checked ? 'block' : 'none';
+        const shedWidth = document.getElementById('shedWidthMm');
+        const shedLength = document.getElementById('shedLengthMm');
+
+        shedDiv.style.display = checked ? 'block' : 'none';
+        shedWidth.disabled = !checked;
+        shedLength.disabled = !checked;
     }
 </script>
-
 </body>
 </html>

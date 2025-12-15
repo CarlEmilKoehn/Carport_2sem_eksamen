@@ -32,7 +32,7 @@ public class AdminMapperTest {
     }
 
     @BeforeEach
-    void oprydningFørTest() throws SQLException {
+    void beforeTests() throws SQLException {
         try (Connection connection = ConnectionPool.getInstance().getConnection()) {
             connection.setSchema("test");
             connection.prepareStatement("DELETE FROM admin").executeUpdate();
@@ -43,7 +43,7 @@ public class AdminMapperTest {
 
     @Test
     @DisplayName("Test af oprettelse af en ny admin")
-    void testOpretAdmin() throws DatabaseException {
+    void testCreateAdmin() throws DatabaseException {
 
         Admin admin = new Admin(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD, TEST_ADMIN_FIRSTNAME, TEST_ADMIN_LASTNAME);
         AdminMapper.createAdmin(admin);
@@ -58,7 +58,7 @@ public class AdminMapperTest {
 
     @Test
     @DisplayName("Test login")
-    void testLoginSuccess() throws DatabaseException {
+    void testAdminLogin() throws DatabaseException {
 
         Admin admin = new Admin(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD, TEST_ADMIN_FIRSTNAME, TEST_ADMIN_LASTNAME);
         AdminMapper.createAdmin(admin);
@@ -73,7 +73,7 @@ public class AdminMapperTest {
 
     @Test
     @DisplayName("Test login med ugyldigt password")
-    void testLoginFejl() throws DatabaseException {
+    void testLoginError() throws DatabaseException {
         Admin admin = new Admin(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD, TEST_ADMIN_FIRSTNAME, TEST_ADMIN_LASTNAME);
         AdminMapper.createAdmin(admin);
 
@@ -84,7 +84,7 @@ public class AdminMapperTest {
 
     @Test
     @DisplayName("Test hentning af alle admins")
-    void testHentAlleAdmins() throws DatabaseException {
+    void testGetAllAdmins() throws DatabaseException {
 
         Admin admin1 = new Admin(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD, TEST_ADMIN_FIRSTNAME, TEST_ADMIN_LASTNAME);
         AdminMapper.createAdmin(admin1);
@@ -121,7 +121,7 @@ public class AdminMapperTest {
 
 @Test
 @DisplayName("Test sletning af admin")
-void testSletAdmin() throws DatabaseException {
+void testRemoveAdmin() throws DatabaseException {
 
     Admin admin = new Admin(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD, TEST_ADMIN_FIRSTNAME, TEST_ADMIN_LASTNAME);
     AdminMapper.createAdmin(admin);
@@ -134,7 +134,7 @@ void testSletAdmin() throws DatabaseException {
 
 @Test
 @DisplayName("Admin findes ikke.")
-void testGetAdminMedUgyldigEmail() {
+void testGetAdminWithWrongEmail() {
 
         assertThrows(DatabaseException.class, () -> {
             AdminMapper.getAdminByEmail("Ugyldig email");
