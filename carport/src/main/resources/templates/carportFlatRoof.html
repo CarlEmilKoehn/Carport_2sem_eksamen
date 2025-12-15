@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="dk" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
@@ -15,7 +14,6 @@
 <header id="top" class="topbar">
     <div class="topbar-inner">
         <img th:src="@{/images/foglogo.png}"
-             src="/images/foglogo.png"
              alt="logo"
              class="headerLogo"
              height="100"
@@ -23,99 +21,119 @@
 
         <nav class="mainNav">
             <a href="https://www.johannesfog.dk/have-fritid/carporte/enkelt-carporte"
-               class="headerButton"
-               target="_blank"
-               rel="noopener">
+               class="headerButton" target="_blank" rel="noopener">
                 Standard Carport
             </a>
             <a th:href="@{/customMadeCarport}"
-               class="headerButton"
-               target="_self">
+               class="headerButton">
                 Skræddersyet Carport
             </a>
-        </nav>
-    </div>
-</header>
-
+        </nav>    </div></header>
 <section class="cardsSection">
     <main class="cards">
         <article class="card">
 
             <h2>Carport med fladt tag</h2>
+            <form th:action="@{/carportFlatRoof}" method="post" class="carportForm">
 
-            <form action="/carportFlatRoof" method="post" class="carportForm">
-
-                <label>Carport bredde *</label>
+                <label>Carport bredde</label>
                 <select name="carportWidthMm" required>
                     <option value="">Vælg bredde</option>
-                </select>
-
-
-                <label>Carport længde *</label>
+                    <option value="2400" th:selected="${carportWidthMm == 2400}">240 cm</option>
+                    <option value="2700" th:selected="${carportWidthMm == 2700}">270 cm</option>
+                    <option value="3000" th:selected="${carportWidthMm == 3000}">300 cm</option>
+                    <option value="3300" th:selected="${carportWidthMm == 3300}">330 cm</option>
+                    <option value="3600" th:selected="${carportWidthMm == 3600}">360 cm</option>
+                    <option value="3900" th:selected="${carportWidthMm == 3900}">390 cm</option>
+                    <option value="4200" th:selected="${carportWidthMm == 4200}">420 cm</option>
+                    <option value="4500" th:selected="${carportWidthMm == 4500}">450 cm</option>
+                    <option value="4800" th:selected="${carportWidthMm == 4800}">480 cm</option>
+                    <option value="5100" th:selected="${carportWidthMm == 5100}">510 cm</option>
+                    <option value="5400" th:selected="${carportWidthMm == 5400}">540 cm</option>
+                    <option value="5700" th:selected="${carportWidthMm == 5700}">570 cm</option>
+                    <option value="6000" th:selected="${carportWidthMm == 6000}">600 cm</option>
+                </select>                <label>Carport længde</label>
                 <select name="carportLengthMm" required>
                     <option value="">Vælg længde</option>
-                </select>
+                    <option value="2400" th:selected="${carportLengthMm == 2400}">240 cm</option>
+                    <option value="3000" th:selected="${carportLengthMm == 3000}">300 cm</option>
+                    <option value="3600" th:selected="${carportLengthMm == 3600}">360 cm</option>
+                    <option value="4200" th:selected="${carportLengthMm == 4200}">420 cm</option>
+                    <option value="4800" th:selected="${carportLengthMm == 4800}">480 cm</option>
+                    <option value="5400" th:selected="${carportLengthMm == 5400}">540 cm</option>
+                    <option value="6000" th:selected="${carportLengthMm == 6000}">600 cm</option>
+                    <option value="6600" th:selected="${carportLengthMm == 6600}">660 cm</option>
+                    <option value="7200" th:selected="${carportLengthMm == 7200}">720 cm</option>
+                    <option value="7800" th:selected="${carportLengthMm == 7800}">780 cm</option>
+                </select>                <h3>Redskabsrum</h3>
+
+                <label class="shedCheckboxLabel">
+                    <div class="shedCheckboxContainer">
+                        <input type="checkbox"
+                               id="toggleShed"
+                               onclick="toggleShedOptions()">
+                        <span class="shedCheckboxText">Tilføj redskabsrum</span>
+                    </div>                </label>
+
+                <div id="shedOptions" style="display:none;">
+
+                    <label>Redskabsrum bredde</label>
+                    <select name="shedWidthMm">
+                        <option value="2100" th:selected="${shedWidthMm == 2100}">210 cm</option>
+                        <option value="2400" th:selected="${shedWidthMm == 2400}">240 cm</option>
+                        <option value="2700" th:selected="${shedWidthMm == 2700}">270 cm</option>
+                        <option value="3000" th:selected="${shedWidthMm == 3000}">300 cm</option>
+                    </select>                    <label>Redskabsrum længde</label>
+                    <select name="shedLengthMm">
+                        <option value="1500" th:selected="${shedLengthMm == 1500}">150 cm</option>
+                        <option value="1800" th:selected="${shedLengthMm == 1800}">180 cm</option>
+                        <option value="2100" th:selected="${shedLengthMm == 2100}">210 cm</option>
+                        <option value="2400" th:selected="${shedLengthMm == 2400}">240 cm</option>
+                    </select>                </div>                <button type="submit" class="submitButton">
+                Vis og/el. opdater tegning
+            </button>
+            </form>            <p th:if="${svg == null}" class="hint">
+            Vælg mål og klik “Vis tegning” for at fortsætte
+        </p>
+
+            <section class="svgPreview"
+                     th:if="${svg != null}"
+                     th:utext="${svg}">
+            </section>            <form th:if="${svg != null}"
+                                        th:action="@{/createOrder}"
+                                        method="post"
+                                        class="carportForm">
+
+            <input type="hidden" name="carportWidthMm" th:value="${carportWidthMm}">
+            <input type="hidden" name="carportLengthMm" th:value="${carportLengthMm}">
+            <input type="hidden" name="shedWidthMm" th:value="${shedWidthMm}">
+            <input type="hidden" name="shedLengthMm" th:value="${shedLengthMm}">
+            <input type="hidden" name="roofSlopeDeg" value="0">
 
 
-                <input type="hidden" name="carportHeightMm" value="2200">
+            <h3>Kontaktoplysninger</h3>
 
-                <label>Carport trapeztag *</label>
-                <select name="roofTypeId" required>
-                    <option value="">Vælg tag</option>
-                </select>
+            <label>Fornavn</label>
+            <input type="text" name="firstname" required>
 
-                <h3>Redskabsrum</h3>
-                <p>NB! Der skal beregnes 15 cm tagudhæng på hver side af redskabsrummet*</p>
+            <label>Efternavn</label>
+            <input type="text" name="lastname" required>
 
-                <label>Redskabsrum bredde *</label>
-                <select name="shedWidthMm">
-                    <option value="">Uden redskabsrum</option>
-                </select>
+            <label>Adresse</label>
+            <input type="text" name="address" required>
 
+            <label>Postnummer</label>
+            <input type="text" name="postalcode" required>
 
-                <label>Redskabsrum længde *</label>
-                <select name="shedLengthMm">
-                    <option value="">Uden redskabsrum</option>
-                </select>
+            <label>Email</label>
+            <input type="email" name="email" required>
 
-
-                <hr>
-
-                <h3>Kontaktoplysninger</h3>
-
-                <label>Fornavn *</label>
-                <input type="text" name="firstName" required>
-
-                <label>Efternavn *</label>
-                <input type="text" name="lastName" required>
-
-                <label>Adresse *</label>
-                <input type="text" name="address" required>
-
-                <label>Postnummer *</label>
-                <input type="text" name="postalCode" required>
-
-                <label>Email *</label>
-                <input type="email" name="email" required>
-
-                <label class="consent">
-                    <input type="checkbox" required>
-                    Jeg accepterer at Fog må kontakte mig vedr. tilbud
-                </label>
-
-                <button type="submit" class="submitButton">
-                    Bestil tilbud
-                </button>
-
-            </form>
-
-        </article>
-    </main>
-</section>
-
-
+            <button type="submit" class="submitButton">
+                Bestil tilbud
+            </button>
+        </form>        </article>    </main></section>
 <footer>
-    <nav class="footerNav">
+    <footer>        <nav class="footerNav">
         <div class="footerColumn">
             <a href="https://www.johannesfog.dk/om-fog/kundeservice"
                class="mainFooterButton" target="_blank" rel="noopener">
@@ -162,7 +180,6 @@
                 Bliv kontokunde </a>
 
         </div>
-
         <div class="footerColumn">
             <a href="https://www.johannesfog.dk/om-fog/aktuelt"
                class="mainFooterButton" target="_blank" rel="noopener">
@@ -197,7 +214,6 @@
                 Facebook </a>
 
         </div>
-
         <div class="footerColumn">
             <a href="https://www.johannesfog.dk/om-fog"
                class="mainFooterButton" target="_blank" rel="noopener">
@@ -235,7 +251,6 @@
                class="footerButton" target="_blank" rel="noopener">
                 Cookies </a>
         </div>
-
         <div class="footerColumn">
             <a href="#top" class="mainFooterButton"
                onclick="scrollToTop(); return false;">
@@ -257,7 +272,6 @@
                class="footerButton" target="_blank" rel="noopener">
                 Whistleblowerpolitik </a>
         </div>
-
         <div class="footerBrand">
             <a href="#"
                onclick="scrollToTop(); return false;">
@@ -267,19 +281,17 @@
                      class="footerLogo"
                      height="65"
                      width="65">
-            </a>
-            <p>
-                <b>Johannes Fog A/S</b><br>
-                Firskovvej 20<br>
-                2800 Lyngby
-            </p>
-        </div>
-    </nav>
-</footer>
+            </a>                <p>                    <b>Johannes Fog A/S</b><br>
+            Firskovvej 20<br>
+            2800 Lyngby
+        </p>
+        </div>        </nav>    </footer></footer>
 
 <script>
-    function scrollToTop() {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    function toggleShedOptions() {
+        const shedDiv = document.getElementById('shedOptions');
+        shedDiv.style.display =
+            document.getElementById('toggleShed').checked ? 'block' : 'none';
     }
 </script>
 
