@@ -13,7 +13,7 @@ import java.util.List;
 
 public class CarportCalculatorService {
 
-    public void calculate(Order order) throws DatabaseException {
+    public static void calculate(Order order) throws DatabaseException {
 
         List<Material> materials = new ArrayList<>();
 
@@ -33,9 +33,10 @@ public class CarportCalculatorService {
 
         order.setMaterials(materials);
         order.setTotalPrice(materialsTotal.add(slopePrice));
+
     }
 
-    private void addShed(Order order, List<Material> materials) throws DatabaseException {
+    static private void addShed(Order order, List<Material> materials) throws DatabaseException {
 
         if (!(order instanceof OrderWithShed ows)) {
             return;
@@ -80,12 +81,12 @@ public class CarportCalculatorService {
 
     }
 
-    private int calculatePostsForLength(int lengthMM) {
+    private static int calculatePostsForLength(int lengthMM) {
         int postsPerSide = (int) Math.ceil(lengthMM / 3000.0) + 1;
         return postsPerSide * 2;
     }
 
-    private void addPosts(Order order, List<Material> materials) throws DatabaseException {
+    private static void addPosts(Order order, List<Material> materials) throws DatabaseException {
         int totalPosts = calculatePostsForLength(order.getLengthMM());
         int requiredLength = 2200;
 
@@ -109,7 +110,7 @@ public class CarportCalculatorService {
         ));
     }
 
-    private void addRems(Order order, List<Material> materials) throws DatabaseException {
+    private static void addRems(Order order, List<Material> materials) throws DatabaseException {
 
         int totalRems = 4;
 
@@ -137,7 +138,7 @@ public class CarportCalculatorService {
         ));
     }
 
-    private void addRafters(Order order, List<Material> materials) throws DatabaseException {
+    private static void addRafters(Order order, List<Material> materials) throws DatabaseException {
 
         int totalRafters = calculateRaftersForLength(order.getLengthMM());
 
@@ -163,11 +164,11 @@ public class CarportCalculatorService {
         ));
     }
 
-    private int calculateRaftersForLength(int lengthMM) {
+    private static int calculateRaftersForLength(int lengthMM) {
         return (int) Math.ceil(lengthMM / 555.0);
     }
 
-    private void addSterns(Order order, List<Material> materials) throws DatabaseException {
+    private static void addSterns(Order order, List<Material> materials) throws DatabaseException {
 
         int lengthMM = order.getLengthMM();
         int widthMM  = order.getWidthMM();
@@ -259,7 +260,7 @@ public class CarportCalculatorService {
     }
 
 
-    private void addRoofSheets(Order order, List<Material> materials) throws DatabaseException {
+    private static void addRoofSheets(Order order, List<Material> materials) throws DatabaseException {
 
         int widthMM = order.getWidthMM();
         int lengthMM = order.getLengthMM();
@@ -285,7 +286,7 @@ public class CarportCalculatorService {
         ));
     }
 
-    private BigDecimal calculateSlopePrice(Order order) {
+    private static BigDecimal calculateSlopePrice(Order order) {
 
         if (order.getRoofType() == null) {
             return BigDecimal.ZERO;
