@@ -1,0 +1,405 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+package "Controllers" {
+class AdminController {
+  + AdminController():
+  + addRoutes(Javalin): void
+  - handleGuard(Context): void
+  - handleLogin(Context): void
+  - handleLogout(Context): void
+  - pullFlash(Context): void
+  - setPrice(Context): void
+}
+
+class OrderController {
+  + OrderController():
+  + addRoutes(Javalin): void
+  + guardAgainstOrderEqualsNull(Order): void
+  - handleCreateOrder(Context): Order
+  - handlePaymentCarportEmail(Order): boolean
+  - handlePricingCarportEmail(Order): boolean
+  - handleRequestCarportEmail(Order): boolean
+}
+
+}
+
+package "Entities" {
+class Admin {
+  + Admin():
+  + Admin(String, String, String):
+  + Admin(String, String, String, String):
+  - adminEmail: String
+  - adminFirstname: String
+  - adminLastname: String
+  - adminPassword: String
+  # canEqual(Object): boolean
+  + equals(Object): boolean
+  + getAdminEmail(): String
+  + getAdminFirstname(): String
+  + getAdminLastname(): String
+  + getAdminPassword(): String
+  + hashCode(): int
+  + setAdminEmail(String): void
+  + setAdminFirstname(String): void
+  + setAdminLastname(String): void
+  + setAdminPassword(String): void
+  + toString(): String
+}
+
+class Comment {
+  + Comment(int, int, String, Timestamp, String):
+  - CustomerOrderId: int
+  - createdAt: Timestamp
+  - id: int
+  - note: String
+  - whichAdminMadeThisComment: String
+  # canEqual(Object): boolean
+  + equals(Object): boolean
+  + getCreatedAt(): Timestamp
+  + getCustomerOrderId(): int
+  + getId(): int
+  + getNote(): String
+  + getWhichAdminMadeThisComment(): String
+  + hashCode(): int
+  + setCreatedAt(Timestamp): void
+  + setCustomerOrderId(int): void
+  + setId(int): void
+  + setNote(String): void
+  + setWhichAdminMadeThisComment(String): void
+  + toString(): String
+}
+
+class Customer {
+  + Customer(String, String, String, String, int):
+  - address: String
+  - email: String
+  - firstName: String
+  - lastName: String
+  - postalCode: int
+  # canEqual(Object): boolean
+  + equals(Object): boolean
+  + getAddress(): String
+  + getEmail(): String
+  + getFirstName(): String
+  + getLastName(): String
+  + getPostalCode(): int
+  + hashCode(): int
+  + setAddress(String): void
+  + setEmail(String): void
+  + setFirstName(String): void
+  + setLastName(String): void
+  + setPostalCode(int): void
+  + toString(): String
+}
+
+class Material {
+  + Material(int, int, int, int, BigDecimal, String, String, String, Integer, String, String, BigDecimal):
+  + Material(int, int, int, BigDecimal, String, String, String, Integer, String, String, BigDecimal):
+  + Material(int, String, String, int, BigDecimal, String, String):
+  - id: int
+  - lengthMM: Integer
+  - note: String
+  - orderId: int
+  - productDescription: String
+  - productId: int
+  - productName: String
+  - quantity: int
+  - totalPrice: BigDecimal
+  - unitName: String
+  - unitPrice: BigDecimal
+  - unitShortName: String
+  # canEqual(Object): boolean
+  + equals(Object): boolean
+  + getId(): int
+  + getLengthMM(): Integer
+  + getNote(): String
+  + getOrderId(): int
+  + getProductDescription(): String
+  + getProductId(): int
+  + getProductName(): String
+  + getQuantity(): int
+  + getTotalPrice(): BigDecimal
+  + getUnitName(): String
+  + getUnitPrice(): BigDecimal
+  + getUnitShortName(): String
+  + hashCode(): int
+  + setId(int): void
+  + setLengthMM(Integer): void
+  + setNote(String): void
+  + setOrderId(int): void
+  + setProductDescription(String): void
+  + setProductId(int): void
+  + setProductName(String): void
+  + setQuantity(int): void
+  + setTotalPrice(BigDecimal): void
+  + setUnitName(String): void
+  + setUnitPrice(BigDecimal): void
+  + setUnitShortName(String): void
+  + toString(): String
+}
+
+class Order {
+  + Order(int, String, String, RoofType, int, int, int, Timestamp, List<Material>, List<Comment>, BigDecimal):
+  + Order(String, String, RoofType, int, int, int, List<Material>, List<Comment>, BigDecimal):
+  - comments: List<Comment>
+  - createdAt: Timestamp
+  - email: String
+  - heightMM: int
+  - id: int
+  - lengthMM: int
+  - materials: List<Material>
+  - roofType: RoofType
+  - status: String
+  - totalPrice: BigDecimal
+  - widthMM: int
+  # canEqual(Object): boolean
+  + equals(Object): boolean
+  + getComments(): List<Comment>
+  + getCreatedAt(): Timestamp
+  + getEmail(): String
+  + getHeightMM(): int
+  + getId(): int
+  + getLengthMM(): int
+  + getMaterials(): List<Material>
+  + getRoofType(): RoofType
+  + getStatus(): String
+  + getTotalPrice(): BigDecimal
+  + getWidthMM(): int
+  + hashCode(): int
+  + setComments(List<Comment>): void
+  + setCreatedAt(Timestamp): void
+  + setEmail(String): void
+  + setHeightMM(int): void
+  + setId(int): void
+  + setLengthMM(int): void
+  + setMaterials(List<Material>): void
+  + setRoofType(RoofType): void
+  + setStatus(String): void
+  + setTotalPrice(BigDecimal): void
+  + setWidthMM(int): void
+  + toString(): String
+}
+
+class OrderWithShed {
+  + OrderWithShed(int, String, String, RoofType, int, int, int, Timestamp, List<Material>, List<Comment>, BigDecimal, Shed):
+  + OrderWithShed(String, String, RoofType, int, int, int, List<Material>, List<Comment>, BigDecimal, Shed):
+  - shed: Shed
+  + getShed(): Shed
+  + setShed(Shed): void
+}
+
+class RoofType {
+  + RoofType(int, String, int, BigDecimal):
+  - degrees: int
+  - id: int
+  - name: String
+  - price: BigDecimal
+  # canEqual(Object): boolean
+  + equals(Object): boolean
+  + getDegrees(): int
+  + getId(): int
+  + getName(): String
+  + getPrice(): BigDecimal
+  + hashCode(): int
+  + setDegrees(int): void
+  + setId(int): void
+  + setName(String): void
+  + setPrice(BigDecimal): void
+  + toString(): String
+}
+
+class Shed {
+  + Shed(int, int, int):
+  + Shed(int, int):
+  - id: int
+  - lengthMM: int
+  - widthMM: int
+  # canEqual(Object): boolean
+  + equals(Object): boolean
+  + getId(): int
+  + getLengthMM(): int
+  + getWidthMM(): int
+  + hashCode(): int
+  + setId(int): void
+  + setLengthMM(int): void
+  + setWidthMM(int): void
+  + toString(): String
+}
+
+}
+
+package "Persistence" {
+class AdminMapper {
+  + AdminMapper():
+  + createAdmin(Admin): void
+  + deleteAdmin(String): void
+  + getAdminByEmail(String): Admin
+  + getAllAdmins(): List<Admin>
+  + login(String, String): Admin
+  + updateAdmin(Admin): void
+}
+
+class CustomerMapper {
+  + CustomerMapper():
+  + getAllCustomers(): List<Customer>
+  + getCustomerByEmail(String): Customer
+  + isEmailInSystem(String): boolean
+  + registerCustomer(String, String, String, String, int): void
+}
+
+class MaterialMapper {
+  + MaterialMapper():
+  + findCladdingForHeight(int): Material
+  + findOverSternForLength(int): Material
+  + findPostForLength(int): Material
+  + findRafterForLength(int): Material
+  + findRemForLength(int): Material
+  + findRoofSheetForLength(int): Material
+  + findUnderSternForLength(int): Material
+  + getAllMaterialsFromOrder(int): List<Material>
+}
+
+class OrderMapper {
+  + OrderMapper():
+  + changeOrderPrice(int, BigDecimal, Admin, String): void
+  + changeOrderStatus(int, String): void
+  + createOrder(Order): int
+  + getAllCommentsFromOrder(int): List<Comment>
+  + getAllOrders(): List<Order>
+  + getOrderByOrderId(int): Order
+  + getOrdersByStatus(String): List<Order>
+  + getRoofTypeBySlopeDegrees(Integer): RoofType
+}
+
+class ConnectionPool {
+  - ConnectionPool():
+  - DEFAULT_DB: String
+  - DEFAULT_PASSWORD: String
+  - DEFAULT_URL: String
+  - DEFAULT_USER: String
+  + ds: HikariDataSource
+  + instance: ConnectionPool
+  + close(): void
+  - createHikariConnectionPool(String, String, String, String): HikariDataSource
+  + getConnection(): Connection
+  + getInstance(String, String, String, String): ConnectionPool
+  + getInstance(): ConnectionPool
+  + reset(): void
+}
+}
+
+package "Services" {
+class CarportCalculatorService {
+  + CarportCalculatorService():
+  - addPosts(Order, List<Material>): void
+  - addRafters(Order, List<Material>): void
+  - addRems(Order, List<Material>): void
+  - addRoofSheets(Order, List<Material>): void
+  - addShed(Order, List<Material>): void
+  - addSterns(Order, List<Material>): void
+  + calculate(Order): void
+  - calculatePostsForLength(int): int
+  - calculateRaftersForLength(int): int
+  - calculateSlopePrice(Order): BigDecimal
+}
+
+package "Email" {
+
+class CarportMailService {
+  + CarportMailService(MailSender):
+  - mailSender: MailSender
+  - templates: EmailTemplateBuilder
+  + sendOrderPaid(Order, String): void
+  + sendOrderReceived(Order, String): void
+  + sendPriceGiven(Order): void
+}
+class EmailTemplateBuilder {
+  + EmailTemplateBuilder():
+  + buildOrderPaidText(Order): String
+  + buildOrderReceivedText(Order): String
+  + buildPriceGivenText(Order): String
+}
+
+class MailSender {
+  + MailSender():
+  - password: String
+  - username: String
+  + createAttachment(String, String, byte[]): MimeBodyPart
+  - createSession(): Session
+  + sendEmail(String, String, String): void
+  + sendEmail(String, String, String, List<MimeBodyPart>): void
+}
+}
+}
+
+package "Config" {
+class ThymeleafConfig {
+  + ThymeleafConfig():
+  + templateEngine(): TemplateEngine
+}
+}
+
+package "Exceptions" {
+class DatabaseException {
+  + DatabaseException(String):
+  + DatabaseException(String, String):
+}
+class InputException {
+  + InputException(String, String):
+}
+class MailException {
+  + MailException(String, String):
+}
+class ApplicationException {
+  # ApplicationException(String, String):
+  - userMessage: String
+  + getUserMessage(): String
+}
+
+}
+
+class Main {
+  + Main():
+  - DB: String
+  - PASSWORD: String
+  - URL: String
+  - USER: String
+  - connectionPool: ConnectionPool
+  + main(String[]): void
+}
+
+
+
+Main *-- OrderController
+Main *-- AdminController
+Main *-- Config
+
+OrderController *--- "Services"
+OrderController o--- OrderMapper
+OrderController o--- CustomerMapper
+OrderController o--- MaterialMapper
+AdminController o--- AdminMapper
+AdminController *--- "Services"
+
+
+CustomerMapper *--- Customer
+AdminMapper *--- Admin
+OrderMapper *--- Order
+OrderMapper *--- Comment
+OrderMapper *--- RoofType
+OrderMapper *--- Shed
+MaterialMapper *-- Material
+
+Controllers <|-- ConnectionPool
+Persistence o-- ApplicationException
+
+ApplicationException <|-- DatabaseException
+ApplicationException <|-- InputException
+ApplicationException <|-- MailException
+
+Order <|-- OrderWithShed
+
+}
+
+@enduml
