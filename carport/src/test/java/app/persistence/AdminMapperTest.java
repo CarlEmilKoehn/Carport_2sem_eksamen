@@ -6,28 +6,40 @@ import org.junit.jupiter.api.*;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.Statement;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class AdminMapperTest {
 
-    /*
-
     @BeforeAll
     static void initPool() {
-        ConnectionPool.getInstance("postgres", "postgres",
-                "jdbc:postgresql://localhost:5432/%s?currentSchema=public", "carport");
+        ConnectionPool.getInstance(
+                "postgres",
+                "postgres",
+                "jdbc:postgresql://localhost:5432/%s?currentSchema=test",
+                "carport"
+        );
     }
 
     @BeforeEach
     void seedAdmin() throws Exception {
-        try (Connection c = ConnectionPool.getInstance().getConnection()) {
-            try (PreparedStatement del = c.prepareStatement("DELETE FROM admin WHERE admin_email = ?")) {
+
+        try (Connection c = ConnectionPool.getInstance().getConnection();
+             Statement st = c.createStatement()) {
+
+            st.execute("SET search_path TO test");
+
+            try (PreparedStatement del = c.prepareStatement("""
+                DELETE FROM admin WHERE admin_email = ?
+            """)) {
                 del.setString(1, "testadmin@fog.dk");
                 del.executeUpdate();
             }
+
             try (PreparedStatement ins = c.prepareStatement("""
-                INSERT INTO admin (admin_email, admin_password, admin_firstname, admin_lastname)
+                INSERT INTO admin
+                (admin_email, admin_password, admin_firstname, admin_lastname)
                 VALUES (?, ?, ?, ?)
             """)) {
                 ins.setString(1, "testadmin@fog.dk");
@@ -51,6 +63,4 @@ class AdminMapperTest {
         Admin admin = AdminMapper.login("testadmin@fog.dk", "forkert");
         assertNull(admin);
     }
-
-     */
 }
