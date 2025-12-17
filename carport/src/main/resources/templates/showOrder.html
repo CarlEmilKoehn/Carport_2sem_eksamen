@@ -120,7 +120,7 @@
 
       <ul th:if="${order.comments != null && !order.comments.isEmpty()}">
         <li th:each="c : ${order.comments}">
-          <strong th:text="${c.adminEmail != null ? c.adminEmail : '—'}"></strong>
+          <strong th:text="${c.whichAdminMadeThisComment != null ? c.whichAdminMadeThisComment : '—'}"></strong>
           –
           <span th:text="${c.note != null ? c.note : ''}"></span>
           (<span th:text="${c.createdAt != null ? c.createdAt : '—'}"></span>)
