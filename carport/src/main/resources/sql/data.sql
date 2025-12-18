@@ -21,6 +21,18 @@ INSERT INTO unit (unit_name, unit_short_name) VALUES
                                                   ('Rulle', 'Rulle'),
                                                   ('Sæt',   'Sæt');
 
+INSERT INTO roof_type (roof_type_name, roof_type_deg, roof_type_price) VALUES
+                                                                           ('Fladt tag', 0, 0.00),
+                                                                           ('5°', 5, 1200.00),
+                                                                           ('10°', 10, 2400.00),
+                                                                           ('15°', 15, 3600.00),
+                                                                           ('20°', 20, 4800.00),
+                                                                           ('25°', 25, 6000.00),
+                                                                           ('30°', 30, 7200.00),
+                                                                           ('35°', 35, 8400.00),
+                                                                           ('40°', 40, 9600.00),
+                                                                           ('45°', 45, 10800.00);
+
 -- Materialer
 INSERT INTO material_product
 (material_category_id, unit_id, length_mm,
