@@ -1,0 +1,25 @@
+@startuml
+title Customer navigation
+
+[*] --> Homepage
+
+Homepage --> TailorMadeCarport : Choose custom carport
+Homepage --> PreMadeCarport : Choose standard carport
+
+PreMadeCarport --> ExternalFogSite : Open external link
+ExternalFogSite --> [*]
+
+TailorMadeCarport --> FlatRoofForm : Choose flat roof
+TailorMadeCarport --> AngledRoofForm : Choose angled roof
+
+FlatRoofForm --> SubmitOrder : Submit request
+AngledRoofForm --> SubmitOrder : Submit request
+
+SubmitOrder --> FlatRoofForm : Validation error (flat roof)
+SubmitOrder --> AngledRoofForm : Validation error (angled roof)
+
+SubmitOrder --> OrderCreated : Create order in DB
+OrderCreated --> SendOrderReceivedEmail : Send confirmation email (with SVG)
+SendOrderReceivedEmail --> Homepage : Redirect / return
+
+@enduml

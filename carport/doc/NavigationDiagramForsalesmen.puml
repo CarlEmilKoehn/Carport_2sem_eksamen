@@ -1,0 +1,21 @@
+@startuml
+title Admin navigation
+
+[*] --> AdminLogin
+
+AdminLogin --> AdminDashboard : Login OK
+AdminLogin --> AdminLogin : Login failed
+
+AdminDashboard --> AdminDashboard : Filter by status (PENDING / ACCEPTED / REJECTED / ADJUSTED)
+AdminDashboard --> OrderDetails : Open selected order
+
+OrderDetails --> UpdateOrder : Set price and/or status
+UpdateOrder --> OrderDetails : Validation error
+
+UpdateOrder --> SaveChanges : Save to DB
+SaveChanges --> SendPriceEmail : Send email to customer (new price/status)
+SendPriceEmail --> AdminDashboard : Back to dashboard
+
+AdminDashboard --> AdminLogin : Logout
+
+@enduml
